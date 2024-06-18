@@ -65,7 +65,7 @@ class TestSession(TestCase):
         impl.find.assert_called_with(dict(a=5))
         impl.remove.assert_called_with(dict(a=5))
         impl.group.assert_called_with('a')
-        impl.update.assert_called_with(dict(a=5), dict(b=6), False)
+        impl.update_one.assert_called_with(dict(a=5), dict(b=6), False)
 
         doc = TestDoc({})
         sess.save(doc)
@@ -83,7 +83,7 @@ class TestSession(TestCase):
         impl.save.assert_called_with(dict(_id=5, a=5))
         doc = self.TestDocNoSchema({'_id':5, 'a':5, 'b': 6})
         sess.save(doc, 'a')
-        impl.update.assert_called_with(dict(_id=5), {'$set':dict(a=5)})
+        impl.update_one.assert_called_with(dict(_id=5), {'$set':dict(a=5)})
         doc = self.TestDocNoSchema({'_id':5, 'a':5})
         impl.insert_one.return_value = bson.ObjectId()
         sess.insert(doc)

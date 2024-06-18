@@ -204,13 +204,13 @@ class TestDottedOperators(TestCase):
         self.coll = self.bind.db.coll
 
     def test_inc_dotted_dollar(self):
-        self.coll.update({'b.e': 2}, { '$inc': { 'b.e.$': 1 } })
+        self.coll.update_many({'b.e': 2}, { '$inc': { 'b.e.$': 1 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.e': 1 })
         self.assertEqual(obj, { 'b': { 'e': [ 1,3,3 ] } })
 
     def test_inc_dotted_dollar_middle1(self):
         # match on g=1 and $inc by 10
-        self.coll.update({'b.f.g': 1}, { '$inc': { 'b.f.$.g': 10 } })
+        self.coll.update_many({'b.f.g': 1}, { '$inc': { 'b.f.$.g': 10 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.f': 1 })
         self.assertEqual(obj, { 'b': { 'f': [ { 'g': 11 }, { 'g': 2 } ] }})
 
@@ -220,12 +220,12 @@ class TestDottedOperators(TestCase):
         self.assertEqual(0, len(self.coll.find({'x.y.z': 1}).all()))
 
     def test_inc_dotted(self):
-        self.coll.update({}, { '$inc': { 'b.c': 4 } })
+        self.coll.update_many({}, { '$inc': { 'b.c': 4 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.c': 1 })
         self.assertEqual(obj, { 'b': { 'c': 5 } })
 
     def test_set_dotted(self):
-        self.coll.update({}, { '$set': { 'b.c': 4 } })
+        self.coll.update_many({}, { '$set': { 'b.c': 4 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.c': 1 })
         self.assertEqual(obj, { 'b': { 'c': 4 } })
 
@@ -234,35 +234,35 @@ class TestDottedOperators(TestCase):
             {'_id':'foo2', 'a':2,
              'b': [1,2,3],
              'x': {} })
-        self.coll.update({'_id': 'foo2'}, {'$set': {'b.0': 4}})
+        self.coll.update_many({'_id': 'foo2'}, {'$set': {'b.0': 4}})
         obj = self.coll.find_one({'_id': 'foo2'})
         self.assertEqual(obj, {'a': 2, 'x': {}, '_id': 'foo2', 'b': [4, 2, 3]})
 
     def test_unset_dotted(self):
-        self.coll.update({}, { '$unset': { 'b.f.1.g': 1 } })
+        self.coll.update_many({}, { '$unset': { 'b.f.1.g': 1 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.f': 1 })
         self.assertEqual(obj, { 'b': { 'f': [{'g': 1}, {}] } })
 
         # Check that it even works for keys that are not there.
-        self.coll.update({}, { '$unset': { 'b.this_does_not_exists': 1 } })
+        self.coll.update_many({}, { '$unset': { 'b.this_does_not_exists': 1 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.f': 1 })
         self.assertEqual(obj, { 'b': { 'f': [{'g': 1}, {}] } })
 
         # Check that unsetting subkeys of a nonexisting subdocument has no side effect
-        self.coll.update({}, {'$unset': {'this_does_not_exists.x.y.z': 1}})
+        self.coll.update_many({}, {'$unset': {'this_does_not_exists.x.y.z': 1}})
         obj = self.coll.find_one({}, { '_id': 0, 'b.f': 1 })
         self.assertEqual(obj, { 'b': { 'f': [{'g': 1}, {}] } })
 
     def test_push_dotted(self):
-        self.coll.update({}, { '$push': { 'b.e': 4 } })
+        self.coll.update_many({}, { '$push': { 'b.e': 4 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.e': 1 })
         self.assertEqual(obj, { 'b': { 'e': [1,2,3,4] } })
 
     def test_addToSet_dotted(self):
-        self.coll.update({}, { '$addToSet': { 'b.e': 4 } })
+        self.coll.update_many({}, { '$addToSet': { 'b.e': 4 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.e': 1 })
         self.assertEqual(obj, { 'b': { 'e': [1,2,3,4] } })
-        self.coll.update({}, { '$addToSet': { 'b.e': 4 } })
+        self.coll.update_many({}, { '$addToSet': { 'b.e': 4 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.e': 1 })
         self.assertEqual(obj, { 'b': { 'e': [1,2,3,4] } })
 
@@ -285,21 +285,21 @@ class TestDottedOperators(TestCase):
         self.assertNotEqual(obj, None)
 
     def test_pull_dotted(self):
-        self.coll.update(
+        self.coll.update_many(
             {},
             { '$pull': { 'b.f': { 'g': { '$gt': 1 } } } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.f': 1 } )
         self.assertEqual(obj, { 'b': { 'f': [ {'g': 1 } ] } } )
 
     def test_pull_all_dotted(self):
-        self.coll.update(
+        self.coll.update_many(
             {},
             { '$pullAll': { 'b.f': [{'g': 1 }] } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.f': 1 } )
         self.assertEqual(obj, { 'b': { 'f': [ {'g': 2 } ] } } )
 
     def test_pop_dotted(self):
-        self.coll.update(
+        self.coll.update_many(
             {},
             { '$pop': { 'b.f': 1 } })
         obj = self.coll.find_one({}, { '_id': 0, 'b.f': 1 } )
@@ -567,7 +567,7 @@ class TestCollection(TestCase):
 
     def test_upsert_simple(self):
         test = self.bind.db.test
-        test.update(
+        test.update_many(
             dict(_id=0, a=5),
             {'$set': dict(b=6) },
             upsert=True)
@@ -579,18 +579,18 @@ class TestCollection(TestCase):
         test.ensure_index([('a', 1)], unique=True)
 
         # Try with any index
-        test.update({'x': 'NOT_FOUND1'}, {'$set': {'a': 0}}, upsert=True)
+        test.update_many({'x': 'NOT_FOUND1'}, {'$set': {'a': 0}}, upsert=True)
         try:
-            test.update({'x': 'NOT_FOUND2'}, {'$set': {'a': 0}}, upsert=True)
+            test.update_many({'x': 'NOT_FOUND2'}, {'$set': {'a': 0}}, upsert=True)
         except DuplicateKeyError:
             pass
         else:
             assert False, 'Had to detect duplicate key'
 
         # Now try with _id
-        test.update({'x': 'NOT_FOUND3'}, {'$set': {'_id': 0}}, upsert=True)
+        test.update_many({'x': 'NOT_FOUND3'}, {'$set': {'_id': 0}}, upsert=True)
         try:
-            test.update({'x': 'NOT_FOUND4'}, {'$set': {'_id': 0}}, upsert=True)
+            test.update_many({'x': 'NOT_FOUND4'}, {'$set': {'_id': 0}}, upsert=True)
         except DuplicateKeyError:
             pass
         else:
@@ -598,7 +598,7 @@ class TestCollection(TestCase):
 
     def test_upsert_setOnInsert(self):
         test = self.bind.db.test
-        test.update(
+        test.update_many(
             dict(_id=0, a=5),
             {'$set': dict(b=6),
              '$setOnInsert': dict(c=7)},
@@ -606,8 +606,8 @@ class TestCollection(TestCase):
         doc = test.find_one()
         self.assertEqual(doc, dict(_id=0, a=5, b=6, c=7))
 
-        test.update(dict(_id=0, a=5), {'$set': dict(b=0, c=0)})
-        test.update(
+        test.update_many(dict(_id=0, a=5), {'$set': dict(b=0, c=0)})
+        test.update_many(
             dict(_id=0, a=5),
             {'$set': dict(b=2),
              '$setOnInsert': dict(c=7)},
@@ -617,7 +617,7 @@ class TestCollection(TestCase):
 
     def test_upsert_inc(self):
         test = self.bind.db.test
-        test.update(
+        test.update_many(
             dict(_id=0, a=5),
             {'$inc': dict(a=2, b=3) },
             upsert=True)
@@ -626,7 +626,7 @@ class TestCollection(TestCase):
 
     def test_upsert_push(self):
         test = self.bind.db.test
-        test.update(
+        test.update_many(
             dict(_id=0, a=5),
             {'$push': dict(c=1) },
             upsert=True)
@@ -635,7 +635,7 @@ class TestCollection(TestCase):
 
     def test_update_addToSet_with_each(self):
         self.bind.db.coll.insert_one({'_id': 0, 'a': [1, 2, 3]})
-        self.bind.db.coll.update({},
+        self.bind.db.coll.update_many({},
                                  {'$addToSet': {'a': {'$each': [0, 2, 4]}}})
         doc = self.bind.db.coll.find_one()
         self.assertEqual(len(doc['a']), 5)
