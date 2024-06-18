@@ -159,7 +159,7 @@ class TestDatastore(TestCase):
 
     def test_rewind(self):
         collection = self.bind.db.coll
-        collection.insert({'a':'b'}, safe=True)
+        collection.insert({'a':'b'})
 
         cursor = collection.find()
         doc = cursor[0]
