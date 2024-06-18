@@ -792,19 +792,6 @@ class TestCollection(TestCase):
         self.assertEqual(info['myfield']['expireAfterSeconds'], 42)
         self.assertEqual(info['myfield']['unique'], True)
 
-    def test_insert_manipulate_false(self):
-        doc = {'x': 1}
-        self.bind.db.coll.insert(doc, manipulate=False)
-        self.assertEqual(doc, {'x': 1})
-
-    def test_insert_manipulate_true(self):
-        doc = {'x': 1}
-        sample_id = bson.ObjectId()
-        # Cannot patch the class itself, otherwise isinstance() checks will fail on PyPy
-        with patch('bson.ObjectId.__init__', autospec=True, return_value=None, side_effect=lambda *args: args[0]._ObjectId__validate(sample_id)):
-            self.bind.db.coll.insert(doc, manipulate=True)
-        self.assertEqual(doc, {'x': 1, '_id': sample_id})
-
     def test_save_id(self):
         doc = {'_id': bson.ObjectId(), 'x': 1}
         self.bind.db.coll.save(doc)

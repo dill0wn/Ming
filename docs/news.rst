@@ -3,6 +3,11 @@ Ming News / Release Notes
 
 The latest releases support PyMongo 3.  The older 0.5.x releases support PyMongo 2 and Python 2.
 
+pre-release
+---------------------
+* MIM: remove `manipulate` arg since deprecated by pymongo in 3.0 and now fully removed
+
+
 0.13.0 (Mar 16, 2023)
 ---------------------
 * remove Python 3.6 support
