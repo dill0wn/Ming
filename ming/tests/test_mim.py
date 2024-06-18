@@ -725,43 +725,88 @@ class TestCollection(TestCase):
         result = self.bind.db.coll.distinct('_id', filter={'_id': {'$lte': 2}})
         self.assertEqual(set(result), {0, 1, 2})
 
-    def test_find_and_modify_returns_none_on_no_entries(self):
-        self.assertEqual(None, self.bind.db.foo.find_and_modify({'i': 1}, {'$set': {'i': 2}}))
+    def test_find_one_and_update_returns_none_on_no_entries(self):
+        self.assertEqual(None, self.bind.db.foo.find_one_and_update({'i': 1}, {'$set': {'i': 2}}))
 
-    def test_find_and_modify_returns_none_on_upsert_and_no_new(self):
-        self.assertEqual(None, self.bind.db.foo.find_and_modify({'i': 1},
-                                                                {'$set': {'i': 2}},
-                                                                upsert=True, new=False))
-
-    def test_find_and_modify_returns_old_value_on_no_new(self):
-        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
-        self.assertEqual({'_id': 1, 'i': 1}, self.bind.db.foo.find_and_modify({'i': 1},
-                                                                              {'$set': {'i': 2}},
-                                                                              new=False))
-
-    def test_find_and_modify_returns_new_value_on_new(self):
-        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
-        self.assertEqual({'_id': 1, 'i': 2}, self.bind.db.foo.find_and_modify({'i': 1},
-                                                                              {'$set': {'i': 2}},
-                                                                              new=True))
-
-    def test_find_and_modify_returns_new_value_on_new_filter_id(self):
-        self.bind.db.foo.insert_one({'i': 1})
-        self.assertEqual({'i': 2}, self.bind.db.foo.find_and_modify({'i': 1},
+    def test_find_one_and_update_returns_none_on_upsert_and_no_new(self):
+        self.assertEqual(None, self.bind.db.foo.find_one_and_update({'i': 1},
                                                                     {'$set': {'i': 2}},
-                                                                    fields={'_id': False, 'i': True},
-                                                                    new=True))
+                                                                    upsert=True, return_document=False))
 
-    def test_find_and_modify_returns_new_value_on_new_upsert(self):
-        self.assertEqual({'_id': 1, 'i': 2}, self.bind.db.foo.find_and_modify({'i': 1},
-                                                                              {'$set': {'_id': 1,
-                                                                                        'i': 2}},
-                                                                              new=True,
-                                                                              upsert=True))
+    def test_find_one_and_replace_returns_none_on_upsert_and_no_new(self):
+        self.assertEqual(None, self.bind.db.foo.find_one_and_replace({'i': 1},
+                                                                     {'i': 2},
+                                                                     upsert=True, return_document=False))
 
-    def test_find_and_modify_with_remove(self):
+    def test_find_one_and_update_returns_old_value_on_no_return_document(self):
+        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
+        self.assertEqual({'_id': 1, 'i': 1}, self.bind.db.foo.find_one_and_update({'i': 1},
+                                                                                  {'$set': {'i': 2}},
+                                                                                  return_document=False))
+
+    def test_one_and_update_returns_new_value_on_new(self):
+        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
+        self.assertEqual({'_id': 1, 'i': 2}, self.bind.db.foo.find_one_and_update({'i': 1},
+                                                                                  {'$set': {'i': 2}},
+                                                                                  return_document=True))
+
+    def test_find_one_and_replace_returns_new_value_on_new(self):
+        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
+        self.assertEqual({'_id': 1, 'i': 2}, self.bind.db.foo.find_one_and_replace({'i': 1},
+                                                                                   {'i': 2},
+                                                                                   return_document=True))
+
+    def test_find_one_and_replace_fails_with_id(self):
+        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
+        with self.assertRaises(ValueError):
+            self.bind.db.foo.find_one_and_replace({'i': 1},
+                                                  {'_id': 2, 'i': 2},
+                                                  return_document=True)
+
+    def test_find_one_and_replace_fails_with_set(self):
+        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
+        with self.assertRaises(ValueError):
+            self.bind.db.foo.find_one_and_replace({'i': 1},
+                                                  {'$set': {'i': 2}},
+                                                  return_document=True)
+
+    def test_find_one_and_update_returns_new_value_on_new_filter_id(self):
+        self.bind.db.foo.insert_one({'i': 1})
+        self.assertEqual({'i': 2}, self.bind.db.foo.find_one_and_update({'i': 1},
+                                                                        {'$set': {'i': 2}},
+                                                                        projection={'_id': False, 'i': True},
+                                                                        return_document=True))
+
+    def test_find_one_and_update_returns_new_value_on_new_upsert(self):
+        self.assertEqual({'_id': 1, 'i': 2}, self.bind.db.foo.find_one_and_update({'i': 1},
+                                                                                  {'$set': {'_id': 1, 'i': 2}},
+                                                                                  return_document=True,
+                                                                                  upsert=True))
+        
+    def test_find_one_and_update_fails_with_id(self):
+        self.bind.db.foo.insert_one({'_id': 1, 'i': 1})
+        with self.assertRaises(ValueError):
+            self.bind.db.foo.find_one_and_update({'i': 1},
+                                                 {'_id': 2, 'i': 2},
+                                                 return_document=True)
+
+    def test_find_one_and_replace_returns_new_value_on_new_upsert(self):
+        doc = self.bind.db.foo.find_one_and_replace({'i': 1},
+                                                    {'i': 2},
+                                                    return_document=True,
+                                                    upsert=True)
+        self.assertIsInstance(doc.pop("_id"), bson.ObjectId)
+        self.assertEqual({'i': 2}, doc)
+
+    def test_find_one_and_delete(self):
         self.bind.db.col.insert_one({'_id': 1})
-        self.assertEqual({'_id': 1}, self.bind.db.col.find_and_modify({'_id': 1}, remove=True))
+        self.assertEqual({'_id': 1}, self.bind.db.col.find_one_and_delete({'_id': 1}))
+        self.assertEqual(0, self.bind.db.col.count())
+
+    def test_find_one_and_delete_returns_projection(self):
+        self.bind.db.col.insert_one({'_id': 1, 'i': 1})
+        self.assertEqual({'i': 1}, self.bind.db.col.find_one_and_delete({'_id': 1},
+                                                                          projection={'_id': False, 'i': True}))
         self.assertEqual(0, self.bind.db.col.count())
 
     def test_hint_simple(self):

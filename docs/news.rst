@@ -8,7 +8,8 @@ pre-release
 * MIM: remove deprecated `manipulate` and `safe` args from pymongo's insert_one/many methods
 * Replace deprecated pymongo insert with insert_one/manye
   This is across everything MIM, Collections, and Sessions.
-
+* Remove find_and_modify and replace it with find_one_and_update, find_one_and_replace, and find_one_and_delete
+  This is across everything MIM, Collections, and Sessions.
 
 0.13.0 (Mar 16, 2023)
 ---------------------

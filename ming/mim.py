@@ -330,6 +330,12 @@ class Database(database.Database):
             coll.clear()
 
 
+class ModifyOperation:
+    UPDATE = 1
+    REPLACE = 2
+    DELETE = 3
+
+
 class Collection(collection.Collection):
     def __init__(self, database, name):
         super().__init__(database, name)
@@ -391,8 +397,8 @@ class Collection(collection.Collection):
             return result
         return None
 
-    def __find_and_modify(self, query=None, update=None, fields=None,
-                          upsert=False, remove=False, **kwargs):
+    def __find_and_modify(self, query=None, update=None, projection=None,
+                          upsert=False, operation=ModifyOperation.UPDATE, **kwargs):
         if query is None: query = {}
         before = self.find_one(query, sort=kwargs.get('sort'))
         upserted = False
@@ -406,43 +412,55 @@ class Collection(collection.Collection):
 
         before = self.find_one(query, sort=kwargs.get('sort'))
 
-        if remove:
+        if operation == ModifyOperation.DELETE:
             self.__remove({'_id': before['_id']})
-        elif not upserted:
-            self.__update({'_id': before['_id']}, update)
+        else:
+            if '_id' in update:
+                raise ValueError('Cannot change value of immutable field "_id"')
+            if operation == ModifyOperation.REPLACE:
+                if any(k.startswith('$') for k in update.keys()):
+                    raise ValueError('replacement can not include $ operators')
+                # find_one_and_replace should preserve _id, but also prevent it from being provided
+                update['_id'] = before['_id']
+                self.__update({'_id': before['_id']}, update)
+            elif operation == ModifyOperation.UPDATE:
+                if not all(k.startswith('$') for k in update.keys()):
+                    raise ValueError('update only works with $ operators')
+                if not upserted:
+                    self.__update({'_id': before['_id']}, update)
 
-        return_new = kwargs.get('new', False)
-        if return_new:
-            return self.find_one(dict(_id=before['_id']), fields)
+        return_document = kwargs.pop('return_document', None)
+        return_new = kwargs.pop('new', None)
+        if return_new is not None:
+            warnings.warn('The kwarg new=True is now deprecated. Please use return_document=True instead.', DeprecationWarning, stacklevel=2)
+            if return_document is None:
+                return_document = return_new
+
+        if return_document:
+            return self.find_one(dict(_id=before['_id']), projection)
         elif upserted:
             return None
         else:
-            return Projection(fields).apply(before)
-
-    def find_and_modify(self, query=None, update=None, fields=None,
-                        upsert=False, remove=False, **kwargs):
-        # FIXME: remove
-        # raise NotImplementedError("No longer exists")
-        warnings.warn('find_and_modify is now deprecated, please use find_one_and_delete, '
-                      'find_one_and_replace, find_one_and_update)', DeprecationWarning, stacklevel=2)
-        return self.__find_and_modify(query, update, fields, upsert, remove, **kwargs)
+            return Projection(projection).apply(before)
 
     def find_one_and_delete(self, filter, projection=None, sort=None, **kwargs):
-        return self.__find_and_modify(filter, fields=projection, remove=True, sort=sort, **kwargs)
+        return self.__find_and_modify(filter, projection=projection, operation=ModifyOperation.DELETE, sort=sort, **kwargs)
 
-    def find_one_and_replace(self, filter, replacement, projection=None, sort=None,
-                             return_document=False, **kwargs):
-        # ReturnDocument.BEFORE -> False
-        # ReturnDocument.AFTER -> True
-        return self.__find_and_modify(filter, update=replacement, fields=projection,
-                                      sort=sort, new=return_document, **kwargs)
+    def find_one_and_replace(self, filter, replacement, projection=None, sort=None, upsert=False,
+                             return_document=None, **kwargs):
+        # pymongo.collection.ReturnDocument.BEFORE -> False
+        # pymongo.collection.ReturnDocument.AFTER -> True
+        return self.__find_and_modify(filter, update=replacement, projection=projection,
+                                      sort=sort, upsert=upsert, return_document=return_document, 
+                                      operation=ModifyOperation.REPLACE, **kwargs)
 
-    def find_one_and_update(self, filter, update, projection=None, sort=None,
-                            return_document=False, **kwargs):
-        # ReturnDocument.BEFORE -> False
-        # ReturnDocument.AFTER -> True
-        return self.__find_and_modify(filter, update=update, fields=projection,
-                                      sort=sort, new=return_document, **kwargs)
+    def find_one_and_update(self, filter, update, projection=None, sort=None, upsert=False,
+                            return_document=None, **kwargs):
+        # pymongo.collection.ReturnDocument.BEFORE -> False
+        # pymongo.collection.ReturnDocument.AFTER -> True
+        return self.__find_and_modify(filter, update=update, projection=projection,
+                                      sort=sort, upsert=upsert, return_document=return_document,
+                                      operation=ModifyOperation.UPDATE, **kwargs)
 
     def count(self, filter=None, **kwargs):
         # FIXME: delete
