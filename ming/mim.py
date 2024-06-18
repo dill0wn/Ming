@@ -421,6 +421,8 @@ class Collection(collection.Collection):
 
     def find_and_modify(self, query=None, update=None, fields=None,
                         upsert=False, remove=False, **kwargs):
+        # FIXME: remove
+        # raise NotImplementedError("No longer exists")
         warnings.warn('find_and_modify is now deprecated, please use find_one_and_delete, '
                       'find_one_and_replace, find_one_and_update)', DeprecationWarning, stacklevel=2)
         return self.__find_and_modify(query, update, fields, upsert, remove, **kwargs)
@@ -443,6 +445,12 @@ class Collection(collection.Collection):
                                       sort=sort, new=return_document, **kwargs)
 
     def count(self, filter=None, **kwargs):
+        # FIXME: delete
+        """
+        ntotal = collection.estimated_document_count()
+        nmatched = collection.count_documents({'price': {'$gte': 10}})
+        """
+        # raise NotImplementedError("No longer exists")
         return self.find(filter, **kwargs).count()
 
     def __insert(self, doc_or_docs, **kwargs):
@@ -480,6 +488,8 @@ class Collection(collection.Collection):
         return InsertManyResult(result, True)
 
     def save(self, doc, **kwargs):
+        # FIXME: remove, does anything need to be done for this to work?
+        # raise NotImplementedError("No longer exists")
         warnings.warn('save is now deprecated, please use insert_one or replace_one', DeprecationWarning, stacklevel=2)
         _id = doc.get('_id', ())
         if _id == ():
@@ -528,6 +538,8 @@ class Collection(collection.Collection):
             return result
 
     def update(self, spec, updates, upsert=False, multi=False):
+        # FIXME: remove
+        # raise NotImplementedError("No longer exists")
         warnings.warn('update is now deprecated, please use update_many or update_one', DeprecationWarning, stacklevel=2)
         return self.__update(spec, updates, upsert, multi)
 
@@ -554,6 +566,8 @@ class Collection(collection.Collection):
         return result
 
     def remove(self, spec=None, **kwargs):
+        # FIXME: remove, replaced by delete_one and delete_many
+        # raise NotImplementedError("No longer exists")
         warnings.warn('remove is now deprecated, please use delete_many or delete_one', DeprecationWarning, stacklevel=2)
         self.__remove(spec, **kwargs)
 
@@ -570,6 +584,23 @@ class Collection(collection.Collection):
 
     def ensure_index(self, key_or_list, unique=False, cache_for=300,
                      name=None, **kwargs):
+        # FIXME: remove. Replaced with 
+        """
+        https://pymongo.readthedocs.io/en/stable/migrate-to-pymongo4.html#collection-ensure-index-is-removed
+        Code like this:
+            def persist(self, document):
+                collection.ensure_index('a', unique=True)
+                collection.insert_one(document)
+
+        Can be changed to this:
+
+            def persist(self, document):
+                if not self.created_index:
+                    collection.create_index('a', unique=True)
+                    self.created_index = True
+                collection.insert_one(document)
+        """
+        # raise NotImplementedError("No longer exists")
         if isinstance(key_or_list, list):
             keys = tuple(tuple(k) for k in key_or_list)
         else:
@@ -644,6 +675,12 @@ class Collection(collection.Collection):
             docindex.pop(key_values, None)
 
     def map_reduce(self, map, reduce, out, full_response=False, **kwargs):
+        # FIXME: remove 
+        """
+        https://pymongo.readthedocs.io/en/stable/migrate-to-pymongo4.html#collection-map-reduce-and-collection-inline-map-reduce-are-removed
+        tl;dr - use aggregate()
+        """
+        # raise NotImplementedError("No longer exists")
         if isinstance(out, str):
             out = { 'replace':out }
         cmd_args = {'mapreduce': self.name,
@@ -739,6 +776,13 @@ class Cursor:
             self._safe_to_chain = True
 
     def count(self):
+        # FIXME: remove
+        # raise NotImplementedError("No longer exists")
+        """
+        replace uses with collection based checks:
+            ntotal = collection.estimated_document_count()
+            nmatched = collection.count_documents({'price': {'$gte': 10}})
+        """
         return sum(1 for x in self._iterator_gen())
 
     def __getitem__(self, key):
@@ -1031,6 +1075,8 @@ class Match:
             return default
 
     def update(self, updates, upserted=False):
+        # FIXME: what the hell is a match? Collection no longer has update() method
+        # raise NotImplementedError("what is this?")
         newdoc = {}
         for k, v in updates.items():
             if k.startswith('$'): break

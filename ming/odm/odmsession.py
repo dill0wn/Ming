@@ -188,6 +188,7 @@ class ODMSession:
         _call_hook(self, 'cursor_created', odm_cursor, 'find', cls, *args, **kwargs)
         return odm_cursor
 
+    # FIXME: delete
     def find_and_modify(self, cls, *args, **kwargs):
         """Finds and updates ``cls``.
 

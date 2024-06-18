@@ -19,7 +19,7 @@ page = dict(
 
 pages = db.pages
 
-pages.insert(page)
+pages.insert(page)  # FIXME: is this insert_one? What object is this?
 
 db.collection_names()
 
@@ -27,6 +27,6 @@ page = pages.find_one()
 
 page['author'] = 'Rick Copeland'
 
-pages.save(page)
+pages.save(page)  # FIXME: is save a thing anymore?
 
 pages.find_one()

@@ -104,6 +104,22 @@ class Session:
         return self._impl(cls).count()
 
     def ensure_index(self, cls, fields, **kwargs):
+        # FIXME: removed 
+        """
+        https://pymongo.readthedocs.io/en/stable/migrate-to-pymongo4.html#collection-ensure-index-is-removed
+        Code like this:
+            def persist(self, document):
+                collection.ensure_index('a', unique=True)
+                collection.insert_one(document)
+
+        Can be changed to this:
+
+            def persist(self, document):
+                if not self.created_index:
+                    collection.create_index('a', unique=True)
+                    self.created_index = True
+                collection.insert_one(document)
+        """
         index_fields = fixup_index(fields)
         return self._impl(cls).ensure_index(index_fields, **kwargs), fields
 
@@ -112,15 +128,20 @@ class Session:
             self.ensure_index(cls, idx.index_spec, background=True, **idx.index_options)
 
     def group(self, cls, *args, **kwargs):
+        # raise NotImplementedError("Needs updating")
         return self._impl(cls).group(*args, **kwargs)
 
     def aggregate(self, cls, *args, **kwargs):
         return self._impl(cls).aggregate(*args, **kwargs)
 
     def map_reduce(self, cls, *args, **kwargs):
+        # FIXME: remove 
+        # raise NotImplementedError("No longer exists")
         return self._impl(cls).map_reduce(*args, **kwargs)
 
     def inline_map_reduce(self, cls, *args, **kwargs):
+        # FIXME: remove 
+        # raise NotImplementedError("No longer exists")
         return self._impl(cls).inline_map_reduce(*args, **kwargs)
 
     def distinct(self, cls, *args, **kwargs):
@@ -130,6 +151,8 @@ class Session:
         return self._impl(cls).update(spec, fields, upsert, **kw)
 
     def find_and_modify(self, cls, query=None, sort=None, new=False, **kw):
+        # FIXME: remove
+        # raise NotImplementedError("No longer exists")
         if query is None: query = {}
         if sort is None: sort = {}
         options = dict(kw, query=query, sort=sort, new=new)
