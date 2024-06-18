@@ -421,6 +421,8 @@ class Collection(collection.Collection):
 
     def find_and_modify(self, query=None, update=None, fields=None,
                         upsert=False, remove=False, **kwargs):
+        # FIXME: remove
+        # raise NotImplementedError("No longer exists")
         warnings.warn('find_and_modify is now deprecated, please use find_one_and_delete, '
                       'find_one_and_replace, find_one_and_update)', DeprecationWarning, stacklevel=2)
         return self.__find_and_modify(query, update, fields, upsert, remove, **kwargs)
@@ -591,7 +593,6 @@ class Collection(collection.Collection):
 
         return index_name
 
-    # ensure_index is now deprecated.
     def create_index(self, keys, **kwargs):
         return self.ensure_index(keys, **kwargs)
 
@@ -738,7 +739,11 @@ class Cursor:
             del self.iterator
             self._safe_to_chain = True
 
-    def count(self):
+        """
+        replace uses with collection based checks:
+            ntotal = collection.estimated_document_count()
+            nmatched = collection.count_documents({'price': {'$gte': 10}})
+        """
         return sum(1 for x in self._iterator_gen())
 
     def __getitem__(self, key):
