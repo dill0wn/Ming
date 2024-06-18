@@ -133,15 +133,14 @@ class Session:
             return self._impl(cls).update_many(spec, fields, upsert, **kw)
         return self._impl(cls).update_one(spec, fields, upsert, **kw)
 
-    def find_and_modify(self, cls, query=None, sort=None, new=False, **kw):
-        # FIXME: remove
-        # raise NotImplementedError("No longer exists")
-        if query is None: query = {}
-        if sort is None: sort = {}
-        options = dict(kw, query=query, sort=sort, new=new)
-        bson = self._impl(cls).find_and_modify(**options)
-        if bson is None: return None
-        return cls.make(bson)
+    def find_one_and_update(self, cls, *args, **kwargs):
+        return self._impl(cls).find_one_and_update(*args, **kwargs)
+
+    def find_one_and_replace(self, cls, *args, **kwargs):
+        return self._impl(cls).find_one_and_replace(*args, **kwargs)
+
+    def find_one_and_delete(self, cls, *args, **kwargs):
+        return self._impl(cls).find_one_and_delete(*args, **kwargs)
 
     def _prep_save(self, doc, validate):
         hook = doc.m.before_save
