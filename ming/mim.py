@@ -464,6 +464,8 @@ class Collection(collection.Collection):
         return result
 
     def insert(self, doc_or_docs, **kwargs):
+        # FIXME: remove
+        raise NotImplementedError("No longer exists")
         warnings.warn('insert is now deprecated, please use insert_one or insert_many', DeprecationWarning, stacklevel=2)
         return self.__insert(doc_or_docs, **kwargs)
 
@@ -966,7 +968,7 @@ class Match:
             # $options is currently only correlated to $regex and is not a standalone operator
             # always True to prevent code that use for example case insensitive regex from failing
             # tests without any reason
-            log.warn('$options not implemented')
+            log.warning('$options not implemented')
             return True
         if op == '$ne': return BsonArith.cmp(val, value) != 0
         if op == '$gt': return BsonArith.cmp(val, value) > 0

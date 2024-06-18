@@ -168,7 +168,7 @@ class TestBasicMapping(TestCase):
     def test_mapper(self):
         m = mapper(self.Basic)
         assert repr(m) == '<Mapper Basic:basic>'
-        self.datastore.db.basic.insert(dict(
+        self.datastore.db.basic.insert_one(dict(
                 a=1, b=[2,3], c=dict(d=4, e=5), f='unknown'))
         obj = self.Basic.query.find().options(instrument=False).first()
         q = self.Basic.query.find()
