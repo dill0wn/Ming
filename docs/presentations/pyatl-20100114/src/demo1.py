@@ -19,7 +19,7 @@ page = dict(
 
 pages = db.pages
 
-pages.insert(page)  # FIXME: is this insert_one? What object is this?
+pages.insert_one(page)
 
 db.collection_names()
 

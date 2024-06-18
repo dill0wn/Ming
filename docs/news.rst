@@ -5,7 +5,9 @@ The latest releases support PyMongo 3.  The older 0.5.x releases support PyMongo
 
 pre-release
 ---------------------
-* MIM: remove deprecated `manipulate` and `safe` args from pymongo's insert methods
+* MIM: remove deprecated `manipulate` and `safe` args from pymongo's insert_one/many methods
+* Replace deprecated pymongo insert with insert_one/manye
+  This is across everything MIM, Collections, and Sessions.
 
 
 0.13.0 (Mar 16, 2023)
