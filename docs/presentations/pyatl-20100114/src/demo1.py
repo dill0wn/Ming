@@ -19,7 +19,7 @@ page = dict(
 
 pages = db.pages
 
-pages.insert(page)
+pages.insert_one(page)
 
 db.collection_names()
 

@@ -447,13 +447,11 @@ class Collection(collection.Collection):
     def count(self, filter=None, **kwargs):
         return self.find(filter, **kwargs).count()
 
-    def __insert(self, doc_or_docs, manipulate=True, **kwargs):
+    def __insert(self, doc_or_docs, **kwargs):
         result = []
         if not isinstance(doc_or_docs, list):
             doc_or_docs = [ doc_or_docs ]
         for doc in doc_or_docs:
-            if not manipulate:
-                doc = bcopy(doc)
             bson_safe(doc)
             _id = doc.get('_id', ())
             if _id == ():
@@ -466,10 +464,6 @@ class Collection(collection.Collection):
             self._index(doc)
             self._data[_id] = bcopy(doc)
         return result
-
-    def insert(self, doc_or_docs, manipulate=True, **kwargs):
-        warnings.warn('insert is now deprecated, please use insert_one or insert_many', DeprecationWarning, stacklevel=2)
-        return self.__insert(doc_or_docs, manipulate, **kwargs)
 
     def insert_one(self, document, session=None):
         result = self.__insert(document)

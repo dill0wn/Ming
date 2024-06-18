@@ -3,6 +3,12 @@ Ming News / Release Notes
 
 The latest releases support PyMongo 3.  The older 0.5.x releases support PyMongo 2 and Python 2.
 
+Pre-Release
+---------------------
+* Prepare for PyMongo 4.0 support
+* MIM: remove deprecated ``manipulate`` and ``safe`` args from pymongo's ``insert_one`` and ``insert_many`` methods
+* Replace ``insert()`` with ``insert_one()`` and ``insert_many()`` to closer match pymongo4's API
+
 0.13.0 (Mar 16, 2023)
 ---------------------
 * remove Python 3.6 support
