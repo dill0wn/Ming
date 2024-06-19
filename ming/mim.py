@@ -84,7 +84,7 @@ class Connection:
             db = self._databases[name] = Database(self, name)
             return db
 
-    def database_names(self):
+    def list_database_names(self):
         return self._databases.keys()
 
     def drop_database(self, name):
@@ -320,7 +320,7 @@ class Database(database.Database):
     def __repr__(self):
         return 'mim.Database(%s)' % self.name
 
-    def collection_names(self):
+    def list_collection_names(self):
         return self._collections.keys()
 
     def drop_collection(self, name):
