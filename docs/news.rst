@@ -9,6 +9,7 @@ Pre-Release
 * MIM: remove deprecated ``manipulate`` and ``safe`` args from pymongo's ``insert_one`` and ``insert_many`` methods
 * Replace ``insert()`` with ``insert_one()`` and ``insert_many()`` to closer match pymongo4's API
 * Replace ``find_and_modify()`` with ``find_one_and_update()``, ``find_one_and_replace()``, and ``find_one_and_delete()`` to closer match pymongo4's API
+* Remove ``group()`` methods as they are unsupported in pymongo4. Use the aggregation pipeline.
 
 0.13.0 (Mar 16, 2023)
 ---------------------

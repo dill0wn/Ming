@@ -319,7 +319,7 @@ class _QueryDescriptor:
 class _ClassQuery:
     """Provides ``.query`` attribute for :class:`MappedClass`."""
     _proxy_methods = (
-        'find', 'remove', 'update', 'group', 'distinct',
+        'find', 'remove', 'update', 'distinct',
         'find_one_and_update', 'find_one_and_replace', 'find_one_and_delete', 
         'aggregate', 'map_reduce', 'inline_map_reduce')
 
