@@ -323,7 +323,7 @@ class Database(database.Database):
     def __repr__(self):
         return 'mim.Database(%s)' % self.name
 
-    def collection_names(self):  # FIXME: rename list_collection_names()
+    def list_collection_names(self):
         return self._collections.keys()
 
     def drop_collection(self, name):

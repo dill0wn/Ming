@@ -21,7 +21,7 @@ pages = db.pages
 
 pages.insert_one(page)
 
-db.collection_names()
+db.list_collection_names()
 
 page = pages.find_one()
 
