@@ -84,6 +84,10 @@ class Connection:
             return db
 
     def database_names(self):
+        raise NotImplementedError("No longer exists")
+        return self._databases.keys()
+
+    def list_database_names(self):
         return self._databases.keys()
 
     def drop_database(self, name):
@@ -319,7 +323,7 @@ class Database(database.Database):
     def __repr__(self):
         return 'mim.Database(%s)' % self.name
 
-    def collection_names(self):
+    def collection_names(self):  # FIXME: rename list_collection_names()
         return self._collections.keys()
 
     def drop_collection(self, name):
