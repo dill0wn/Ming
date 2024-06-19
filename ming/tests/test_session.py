@@ -58,13 +58,11 @@ class TestSession(TestCase):
                  cc=dict(dd=None, ee=None)))
         sess.find(TestDoc, dict(a=5))
         sess.remove(TestDoc, dict(a=5))
-        sess.group(TestDoc, 'a')
         sess.update_partial(TestDoc, dict(a=5), dict(b=6), False)
 
         impl.find_one.assert_called_with(dict(a=5))
         impl.find.assert_called_with(dict(a=5))
         impl.remove.assert_called_with(dict(a=5))
-        impl.group.assert_called_with('a')
         impl.update_one.assert_called_with(dict(a=5), dict(b=6), False)
 
         doc = TestDoc({})
@@ -151,7 +149,6 @@ class TestSession(TestCase):
         self.TestDoc.m.inline_map_reduce()
         self.TestDoc.m.distinct()
         self.TestDoc.m.find({'a': 'b'}).distinct()
-        self.TestDoc.m.group()
 
 
 

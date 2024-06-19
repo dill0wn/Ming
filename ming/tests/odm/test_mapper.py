@@ -272,11 +272,6 @@ class TestBasicMapping(TestCase):
         self.Basic.query.inline_map_reduce()
         assert pymongo_inline_map_reduce.called
 
-    @patch('pymongo.collection.Collection.group')
-    def test_group(self, pymongo_group):
-        self.Basic.query.group()
-        assert pymongo_group.called
-
     def test_multiple_update_flushes(self):
         initial_doc = self.Basic()
         initial_doc.a = 1

@@ -276,14 +276,6 @@ class ODMSession:
         """Drop all indexes declared in ``cls``"""
         return self.impl.drop_indexes(cls)
 
-    def group(self, cls, *args, **kwargs):
-        """Runs a grouping on the model collection.
-
-        Arguments are the same as  :meth:`pymongo.collection.Collection.group`.
-        """
-        m = mapper(cls)
-        return self.impl.group(m.collection, *args, **kwargs)
-
     def aggregate(self, cls, *args, **kwargs):
         """Runs an aggregation pipeline on the given collection.
 
