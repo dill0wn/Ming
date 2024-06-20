@@ -83,10 +83,6 @@ class Connection:
             db = self._databases[name] = Database(self, name)
             return db
 
-    def database_names(self):
-        raise NotImplementedError("No longer exists")
-        return self._databases.keys()
-
     def list_database_names(self):
         return self._databases.keys()
 
