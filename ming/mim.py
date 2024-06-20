@@ -538,12 +538,6 @@ class Collection(collection.Collection):
         else:
             return result
 
-    def update(self, spec, updates, upsert=False, multi=False):
-        # FIXME: remove
-        raise NotImplementedError("No longer exists")
-        warnings.warn('update is now deprecated, please use update_many or update_one', DeprecationWarning, stacklevel=2)
-        return self.__update(spec, updates, upsert, multi)
-
     def update_many(self, filter, update, upsert=False):
         result = self.__update(filter, update, upsert, multi=True)
         return UpdateResult(result, True)
