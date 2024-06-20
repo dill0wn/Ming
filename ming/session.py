@@ -177,8 +177,9 @@ class Session:
                 upsert=True, **fix_write_concern(kwargs)
             )
 
-        if result and '_id' not in doc:
-            doc._id = result
+        if result and '_id' not in doc and result.upserted_id:
+            doc._id = result.upserted_id
+
         return result
 
     @annotate_doc_failure
