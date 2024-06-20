@@ -145,8 +145,6 @@ class TestSession(TestCase):
     def test_aggregations(self):
         # just check that they exist & run, no input/output checks
         self.TestDoc.m.aggregate()
-        self.TestDoc.m.map_reduce()
-        self.TestDoc.m.inline_map_reduce()
         self.TestDoc.m.distinct()
         self.TestDoc.m.find({'a': 'b'}).distinct()
 

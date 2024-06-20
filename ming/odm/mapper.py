@@ -321,7 +321,7 @@ class _ClassQuery:
     _proxy_methods = (
         'find', 'remove', 'update', 'group', 'distinct',
         'find_one_and_update', 'find_one_and_replace', 'find_one_and_delete', 
-        'aggregate', 'map_reduce', 'inline_map_reduce')
+        'aggregate',)
 
     def __init__(self, mapper):
         self.mapper = mapper

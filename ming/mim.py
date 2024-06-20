@@ -696,23 +696,6 @@ class Collection(collection.Collection):
             key_values = self._extract_index_key(doc, keys)
             docindex.pop(key_values, None)
 
-    def map_reduce(self, map, reduce, out, full_response=False, **kwargs):
-        # FIXME: remove 
-        """
-        https://pymongo.readthedocs.io/en/stable/migrate-to-pymongo4.html#collection-map-reduce-and-collection-inline-map-reduce-are-removed
-        tl;dr - use aggregate()
-        """
-        # raise NotImplementedError("No longer exists")
-        if isinstance(out, str):
-            out = { 'replace':out }
-        cmd_args = {'mapreduce': self.name,
-                    'map': map,
-                    'reduce': reduce,
-                    'out': out,
-                    }
-        cmd_args.update(kwargs)
-        return self.database.command(cmd_args)
-
     def distinct(self, key, filter=None, **kwargs):
         return self.database.command({'distinct': self.name,
                                       'key': key,
