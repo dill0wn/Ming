@@ -5,7 +5,8 @@ import bson.errors
 
 import pymongo
 import pymongo.errors
-from pymongo.database import Database
+import pymongo.collection
+import pymongo.database
 
 from .base import Cursor, Object
 from .datastore import DataStore
@@ -48,14 +49,14 @@ class Session:
             result = cls._registry[name] = cls(cls._datastores.get(name))
         return result
 
-    def _impl(self, cls):
+    def _impl(self, cls) -> pymongo.collection.Collection:
         try:
             return self.db[cls.m.collection_name]
         except TypeError:
             raise exc.MongoGone('MongoDB is not connected')
 
     @property
-    def db(self) -> Database:
+    def db(self) -> pymongo.database.Database:
         if not self.bind:
             raise exc.MongoGone('No MongoDB connection for "%s"' % getattr(self, '_name', 'unknown connection'))
         return self.bind.db
@@ -146,7 +147,7 @@ class Session:
         return data
 
     @annotate_doc_failure
-    def save(self, doc, *args, **kwargs):
+    def save(self, doc, *args, **kwargs) -> bson.ObjectId:
         data = self._prep_save(doc, kwargs.pop('validate', True))
         if args:
             data = {arg: data[arg] for arg in args}
