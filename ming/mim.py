@@ -489,12 +489,6 @@ class Collection(collection.Collection):
             self._data[_id] = bcopy(doc)
         return result
 
-    def insert(self, doc_or_docs, **kwargs):
-        # FIXME: remove
-        raise NotImplementedError("No longer exists")
-        warnings.warn('insert is now deprecated, please use insert_one or insert_many', DeprecationWarning, stacklevel=2)
-        return self.__insert(doc_or_docs, **kwargs)
-
     def insert_one(self, document, session=None):
         result = self.__insert(document)
         if result:
