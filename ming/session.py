@@ -165,11 +165,17 @@ class Session:
     def save(self, doc, *args, **kwargs):
         data = self._prep_save(doc, kwargs.pop('validate', True))
         if args:
-            values = {arg: data[arg] for arg in args}
+            data = {arg: data[arg] for arg in args}
             result = self._impl(doc).update_one(
-                dict(_id=doc._id), {'$set': values}, **fix_write_concern(kwargs))
+                dict(_id=doc._id), {'$set': data},
+                upsert=True, **fix_write_concern(kwargs)
+            )
         else:
-            result = self._impl(doc).save(data, **fix_write_concern(kwargs))
+            result = self._impl(doc).replace_one(
+                dict(_id=doc._id), data,
+                upsert=True, **fix_write_concern(kwargs)
+            )
+
         if result and '_id' not in doc:
             doc._id = result
         return result

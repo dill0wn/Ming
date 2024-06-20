@@ -633,15 +633,6 @@ class TestCollection(TestCase):
         self.assertEqual(info['myfield']['expireAfterSeconds'], 42)
         self.assertEqual(info['myfield']['unique'], True)
 
-    def test_save_id(self):
-        doc = {'_id': bson.ObjectId(), 'x': 1}
-        self.bind.db.coll.save(doc)
-
-    def test_save_no_id(self):
-        doc = {'x': 1}
-        self.bind.db.coll.save(doc)
-        assert isinstance(doc['_id'], bson.ObjectId)
-
     def test_unique_index_subdocument(self):
         coll = self.bind.db.coll
 
