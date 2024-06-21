@@ -560,12 +560,6 @@ class Collection(collection.Collection):
         self._data = new_data
         return result
 
-    def remove(self, spec=None, **kwargs):
-        # FIXME: remove, replaced by delete_one and delete_many
-        # raise NotImplementedError("No longer exists")
-        warnings.warn('remove is now deprecated, please use delete_many or delete_one', DeprecationWarning, stacklevel=2)
-        self.__remove(spec, **kwargs)
-
     def delete_one(self, filter, session=None):
         res = self.__remove(filter, multi=False)
         return DeleteResult(res, True)

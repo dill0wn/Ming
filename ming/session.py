@@ -90,13 +90,13 @@ class Session:
                       allow_extra=allow_extra,
                       strip_extra=strip_extra)
 
-    def remove(self, cls, *args, **kwargs):
+    def remove(self, cls, filter={}, *args, **kwargs):
         fix_write_concern(kwargs)
         for kwarg in kwargs:
             if kwarg not in ('spec_or_id', 'w'):
                 raise ValueError("Unexpected kwarg %s.  Did you mean to pass a dict?  If only sent kwargs, pymongo's remove()"
                                  " would've emptied the whole collection.  Which we're pretty sure you don't want." % kwarg)
-        return self._impl(cls).remove(*args, **kwargs)
+        return self._impl(cls).delete_many(filter, *args, **kwargs)
 
     def find_by(self, cls, **kwargs):
         return self.find(cls, kwargs)
@@ -201,7 +201,7 @@ class Session:
 
     @annotate_doc_failure
     def delete(self, doc):
-        return self._impl(doc).remove({'_id':doc._id})
+        return self._impl(doc).delete_one({'_id':doc._id})
 
     def _set(self, doc, key_parts, value):
         if len(key_parts) == 0:
