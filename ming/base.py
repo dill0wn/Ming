@@ -69,11 +69,12 @@ class Cursor:
     def __bool__(self):
         raise MingException('Cannot evaluate Cursor to a boolean')
 
-    def __init__(self, cls, cursor, allow_extra=True, strip_extra=True):
+    def __init__(self, cls, cursor, allow_extra=True, strip_extra=True, find_spec=None):
         self.cls = cls
         self.cursor = cursor
         self._allow_extra = allow_extra
         self._strip_extra = strip_extra
+        self.find_spec = find_spec
 
     def __iter__(self):
         return self
@@ -89,7 +90,7 @@ class Cursor:
     __next__ = next
 
     def count(self):
-        return self.cursor.count()
+        return self.cursor.collection.count_documents(self.find_spec)
 
     def distinct(self, *args, **kwargs):
         return self.cursor.distinct(*args, **kwargs)

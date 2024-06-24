@@ -1,4 +1,5 @@
 from collections import defaultdict
+import warnings
 
 from pymongo.collection import ReturnDocument
 from pymongo.database import Database
@@ -483,6 +484,8 @@ class ODMCursor:
 
     def count(self):
         """Get the number of objects retrieved by the query"""
+        warnings.warn("Not Implemented, try to switch to collection.count_documents()")
+        # raise NotImplementedError('Use .count_documents() method on the collection instead')
         return self.ming_cursor.count()
 
     def distinct(self, *args, **kwargs):

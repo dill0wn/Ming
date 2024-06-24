@@ -201,7 +201,8 @@ class TestCursor(TestCase):
             Field('b', dict(a=int)))
 
         mongo_cursor = IteratorMock(iter([ {}, {}, {} ]))
-        mongo_cursor.count = mock.Mock(return_value=3)
+        mongo_cursor.collection = mock.Mock()
+        mongo_cursor.collection.count_documents = mock.Mock(return_value=3)
         mongo_cursor.limit = mock.Mock(return_value=mongo_cursor)
         mongo_cursor.hint = mock.Mock(return_value=mongo_cursor)
         mongo_cursor.skip = mock.Mock(return_value=mongo_cursor)
