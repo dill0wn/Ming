@@ -371,7 +371,7 @@ class TestCollection(TestCase):
 
     def test_upsert_duplicated(self):
         test = self.bind.db.test
-        test.ensure_index([('a', 1)], unique=True)
+        test.create_index([('a', 1)], unique=True)
 
         # Try with any index
         test.update_many({'x': 'NOT_FOUND1'}, {'$set': {'a': 0}}, upsert=True)
@@ -605,7 +605,7 @@ class TestCollection(TestCase):
         self.assertEqual(0, self.bind.db.col.estimated_document_count())
 
     def test_hint_simple(self):
-        self.bind.db.coll.ensure_index([('myindex', 1)])
+        self.bind.db.coll.create_index([('myindex', 1)])
 
         cursor = self.bind.db.coll.find().hint([('$natural', 1)])
         self.assertEqual(type(cursor), type(self.bind.db.coll.find()))
@@ -622,7 +622,7 @@ class TestCollection(TestCase):
         self.assertRaises(TypeError, self.bind.db.coll.find().hint, 123)
 
     def test_index_information(self):
-        self.bind.db.coll.ensure_index([('myfield', 1)],
+        self.bind.db.coll.create_index([('myfield', 1)],
                                        background=True,
                                        expireAfterSeconds=42,
                                        unique=True)
@@ -635,7 +635,7 @@ class TestCollection(TestCase):
     def test_unique_index_subdocument(self):
         coll = self.bind.db.coll
 
-        coll.ensure_index([('x.y', 1)], unique=True)
+        coll.create_index([('x.y', 1)], unique=True)
         coll.insert_one({'x': {'y': 1}})
         coll.insert_one({'x': {'y': 2}})
         self.assertRaises(DuplicateKeyError, coll.insert_one, {'x': {'y': 2}})
@@ -643,7 +643,7 @@ class TestCollection(TestCase):
     def test_unique_index_whole_sdoc(self):
         coll = self.bind.db.coll
 
-        coll.ensure_index([('x', 1)], unique=True)
+        coll.create_index([('x', 1)], unique=True)
         coll.insert_one({'x': {'y': 1}})
         coll.insert_one({'x': {'y': 2}})
         self.assertRaises(DuplicateKeyError, coll.insert_one, {'x': {'y': 2}})
@@ -651,7 +651,7 @@ class TestCollection(TestCase):
     def test_unique_sparse_index_subdocument(self):
         coll = self.bind.db.coll
 
-        coll.ensure_index([('x.y', 1)], unique=True, sparse=True)
+        coll.create_index([('x.y', 1)], unique=True, sparse=True)
         coll.insert_one({'x': {'y': 1}})
 
         # no duplicate key error on these:
@@ -665,7 +665,7 @@ class TestCollection(TestCase):
     def test_unique_sparse_index_whole_sdoc(self):
         coll = self.bind.db.coll
 
-        coll.ensure_index([('x', 1)], unique=True, sparse=True)
+        coll.create_index([('x', 1)], unique=True, sparse=True)
         coll.insert_one({'x': {'y': 1}})
         # no duplicate key error on these:
         coll.insert_one({'x': None})

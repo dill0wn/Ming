@@ -1,5 +1,5 @@
 import logging
-from functools import update_wrapper
+from functools import update_wrapper, cache
 
 import bson.errors
 
@@ -107,29 +107,19 @@ class Session:
     def count(self, cls):
         return self._impl(cls).count()
 
-    def ensure_index(self, cls, fields, **kwargs):
-        # FIXME: removed 
+    def create_index(self, cls, fields, **kwargs):
         """
-        https://pymongo.readthedocs.io/en/stable/migrate-to-pymongo4.html#collection-ensure-index-is-removed
-        Code like this:
-            def persist(self, document):
-                collection.ensure_index('a', unique=True)
-                collection.insert_one(document)
-
-        Can be changed to this:
-
-            def persist(self, document):
-                if not self.created_index:
-                    collection.create_index('a', unique=True)
-                    self.created_index = True
-                collection.insert_one(document)
+        # FIXME: We could prevent duplicate indexing...
         """
         index_fields = fixup_index(fields)
-        return self._impl(cls).ensure_index(index_fields, **kwargs), fields
+        return self._impl(cls).create_index(index_fields, **kwargs)
+
+    def ensure_index(self, cls, fields, **kwargs):
+        return self.create_index(cls, fields, **kwargs)
 
     def ensure_indexes(self, cls):
         for idx in cls.m.indexes:
-            self.ensure_index(cls, idx.index_spec, background=True, **idx.index_options)
+            self.create_index(cls, idx.index_spec, background=True, **idx.index_options)
 
     def aggregate(self, cls, *args, **kwargs):
         return self._impl(cls).aggregate(*args, **kwargs)

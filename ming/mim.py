@@ -568,25 +568,8 @@ class Collection(collection.Collection):
     def list_indexes(self, session=None):
         return Cursor(self, lambda: self._indexes.values())
 
-    def ensure_index(self, key_or_list, unique=False, cache_for=300,
+    def create_index(self, key_or_list, unique=False, cache_for=300,
                      name=None, **kwargs):
-        # FIXME: remove. Replaced with 
-        """
-        https://pymongo.readthedocs.io/en/stable/migrate-to-pymongo4.html#collection-ensure-index-is-removed
-        Code like this:
-            def persist(self, document):
-                collection.ensure_index('a', unique=True)
-                collection.insert_one(document)
-
-        Can be changed to this:
-
-            def persist(self, document):
-                if not self.created_index:
-                    collection.create_index('a', unique=True)
-                    self.created_index = True
-                collection.insert_one(document)
-        """
-        # raise NotImplementedError("No longer exists")
         if isinstance(key_or_list, list):
             keys = tuple(tuple(k) for k in key_or_list)
         else:
@@ -608,9 +591,8 @@ class Collection(collection.Collection):
 
         return index_name
 
-    # ensure_index is now deprecated.
-    def create_index(self, keys, **kwargs):
-        return self.ensure_index(keys, **kwargs)
+    def ensure_index(self, keys, **kwargs):
+        raise NotImplementedError("mim.collection.Collection.ensure_index no longer exists")
 
     def index_information(self):
         return {
