@@ -27,6 +27,6 @@ page = pages.find_one()
 
 page['author'] = 'Rick Copeland'
 
-pages.save(page)
+pages.replace_one(dict(_id=page._id), page)
 
 pages.find_one()
