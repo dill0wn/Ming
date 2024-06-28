@@ -575,7 +575,7 @@ class Collection(collection.Collection):
     def list_indexes(self, session=None):
         return Cursor(self, lambda: self._indexes.values())
 
-    def ensure_index(self, key_or_list, unique=False, cache_for=300,
+    def create_index(self, key_or_list, unique=False, cache_for=300,
                      name=None, **kwargs):
         if isinstance(key_or_list, list):
             keys = tuple(tuple(k) for k in key_or_list)
@@ -597,9 +597,6 @@ class Collection(collection.Collection):
             docindex[key_values] = id
 
         return index_name
-
-    def create_index(self, keys, **kwargs):
-        return self.ensure_index(keys, **kwargs)
 
     def index_information(self):
         return {

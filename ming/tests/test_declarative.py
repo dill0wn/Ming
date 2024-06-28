@@ -160,11 +160,11 @@ class TestIndexes(TestCase):
         self.MyDoc = MyDoc
 
     def test_ensure_indexes(self):
-        # make sure the manager constructor calls ensure_index with the right stuff
+        # make sure the manager constructor calls create_index with the right stuff
         self.MyDoc.m
         collection = self.MockSession.db[self.MyDoc.m.collection_name]
-        ensure_index = collection.ensure_index
-        args = ensure_index.call_args_list
+        create_index = collection.create_index
+        args = create_index.call_args_list
         for a in args:
             print(a)
         indexes = [
@@ -182,8 +182,8 @@ class TestIndexes(TestCase):
     def test_ensure_indexes_custom_options(self):
         self.MyDoc.m
         collection = self.MockSession.db[self.MyDoc.m.collection_name]
-        ensure_index = collection.ensure_index
-        args = ensure_index.call_args_list
+        create_index = collection.create_index
+        args = create_index.call_args_list
 
         custom_named_index = None
         for index in self.MyDoc.m.indexes:
@@ -200,29 +200,29 @@ class TestIndexes(TestCase):
     def test_ensure_indexes_slave(self):
         # on a slave, an error will be thrown, but it should be swallowed
         collection = self.MockSession.db[self.MyDoc.__mongometa__.name]
-        ensure_index = collection.ensure_index
-        ensure_index.side_effect = AutoReconnect('not master')
+        create_index = collection.create_index
+        create_index.side_effect = AutoReconnect('not master')
         self.MyDoc.m
-        assert ensure_index.called
+        assert create_index.called
 
         # don't keep trying after it failed once
         self.MyDoc.m
-        assert ensure_index.call_count == 1, ensure_index.call_args_list
+        assert create_index.call_count == 1, create_index.call_args_list
 
     def test_auto_ensure_indexes_option(self):
-        ensure_index = self.MockSession.db[self.MyDoc.__mongometa__.name].ensure_index
+        create_index = self.MockSession.db[self.MyDoc.__mongometa__.name].create_index
         self.MockSession.bind.bind._auto_ensure_indexes = False
         self.MyDoc.m
-        assert not ensure_index.called
+        assert not create_index.called
 
     def test_ensure_indexes_other_error(self):
         # same as above, but no swallowing
         collection = self.MockSession.db[self.MyDoc.__mongometa__.name]
-        ensure_index = collection.ensure_index
-        ensure_index.side_effect = AutoReconnect('blah blah')
+        create_index = collection.create_index
+        create_index.side_effect = AutoReconnect('blah blah')
 
         self.assertRaises(AutoReconnect, lambda: self.MyDoc.m)
-        assert ensure_index.called
+        assert create_index.called
 
     def test_index_inheritance_child_none(self):
         class MyChild(self.MyDoc):

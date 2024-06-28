@@ -105,12 +105,12 @@ class TestSession(TestCase):
         sess.ensure_index(self.TestDoc, 'a')
         impl.find.assert_called_with(dict(a=5))
         impl.estimated_document_count.assert_called_with()
-        impl.ensure_index.assert_called_with([ ('a', pymongo.ASCENDING) ])
-        impl.ensure_index.reset_mock()
+        impl.create_index.assert_called_with([ ('a', pymongo.ASCENDING) ])
+        impl.create_index.reset_mock()
 
         sess.ensure_indexes(self.TestDoc)
         self.assertEqual(
-            impl.ensure_index.call_args_list, [
+            impl.create_index.call_args_list, [
                 (
                     ([ ('b', pymongo.ASCENDING), ('c', pymongo.ASCENDING) ],),
                     {'unique':False, 'sparse':False, 'background': True} ),

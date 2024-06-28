@@ -107,13 +107,16 @@ class Session:
     def count(self, cls):
         return self._impl(cls).estimated_document_count()
 
-    def ensure_index(self, cls, fields, **kwargs):
+    def create_index(self, cls, fields, **kwargs):
         index_fields = fixup_index(fields)
-        return self._impl(cls).ensure_index(index_fields, **kwargs), fields
+        return self._impl(cls).create_index(index_fields, **kwargs)
+
+    def ensure_index(self, cls, fields, **kwargs):
+        return self.create_index(cls, fields, **kwargs)
 
     def ensure_indexes(self, cls):
         for idx in cls.m.indexes:
-            self.ensure_index(cls, idx.index_spec, background=True, **idx.index_options)
+            self.create_index(cls, idx.index_spec, background=True, **idx.index_options)
 
     def aggregate(self, cls, *args, **kwargs):
         return self._impl(cls).aggregate(*args, **kwargs)
