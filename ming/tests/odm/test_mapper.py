@@ -252,11 +252,6 @@ class TestBasicMapping(TestCase):
         self.Basic.query.aggregate([])
         assert pymongo_aggregate.called
 
-    @patch('ming.mim.Collection.map_reduce')
-    def test_map_reduce(self, mim_map_reduce):
-        self.Basic.query.map_reduce('...', '...', {})
-        assert mim_map_reduce.called
-
     @patch('ming.mim.Collection.distinct')
     def test_distinct(self, mim_distinct):
         self.Basic.query.distinct('field')
@@ -266,11 +261,6 @@ class TestBasicMapping(TestCase):
     def test_cursor_distinct(self, mim_distinct):
         self.Basic.query.find({'a': 'b'}).distinct('field')
         assert mim_distinct.called
-
-    @patch('pymongo.collection.Collection.inline_map_reduce')
-    def test_inline_map_reduce(self, pymongo_inline_map_reduce):
-        self.Basic.query.inline_map_reduce()
-        assert pymongo_inline_map_reduce.called
 
     def test_multiple_update_flushes(self):
         initial_doc = self.Basic()

@@ -223,7 +223,7 @@ class _ClassManager(metaclass=_CurriedProxyClass):
         'get', 'find', 'find_by', 'remove', 'count', 'update_partial',
         'ensure_index', 'ensure_indexes', 'index_information',  'drop_indexes',
         'find_one_and_update', 'find_one_and_replace', 'find_one_and_delete',
-        'aggregate', 'distinct', 'map_reduce', 'inline_map_reduce',
+        'aggregate', 'distinct',
         )
     InstanceManagerClass=_InstanceManager
 

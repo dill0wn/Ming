@@ -292,22 +292,6 @@ class ODMSession:
         m = mapper(cls)
         return self.impl.distinct(m.collection, *args, **kwargs)
 
-    def map_reduce(self, cls, *args, **kwargs):
-        """Runs a MapReduce job and stores results in a collection.
-
-        Arguments are the same as  :meth:`pymongo.collection.Collection.map_reduce`.
-        """
-        m = mapper(cls)
-        return self.impl.map_reduce(m.collection, *args, **kwargs)
-
-    def inline_map_reduce(self, cls, *args, **kwargs):
-        """Runs a MapReduce job and keeps results in-memory.
-
-        Arguments are the same as  :meth:`pymongo.collection.Collection.inline_map_reduce`.
-        """
-        m = mapper(cls)
-        return self.impl.inline_map_reduce(m.collection, *args, **kwargs)
-
 
 class SessionExtension:
     """Base class that should be inherited to handle Session events."""

@@ -114,12 +114,6 @@ class Session:
     def aggregate(self, cls, *args, **kwargs):
         return self._impl(cls).aggregate(*args, **kwargs)
 
-    def map_reduce(self, cls, *args, **kwargs):
-        return self._impl(cls).map_reduce(*args, **kwargs)
-
-    def inline_map_reduce(self, cls, *args, **kwargs):
-        return self._impl(cls).inline_map_reduce(*args, **kwargs)
-
     def distinct(self, cls, *args, **kwargs):
         return self._impl(cls).distinct(*args, **kwargs)
 
