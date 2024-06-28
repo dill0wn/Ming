@@ -57,13 +57,13 @@ class TestSession(TestCase):
             dict(a=None, b=dict(a=None), _id=None,
                  cc=dict(dd=None, ee=None)))
         sess.find(TestDoc, dict(a=5))
-        sess.remove(TestDoc, dict(a=5))
-        sess.update_partial(TestDoc, dict(a=5), dict(b=6), False)
-
         impl.find_one.assert_called_with(dict(a=5))
-        impl.find.assert_called_with(dict(a=5))
-        impl.remove.assert_called_with(dict(a=5))
+        sess.remove(TestDoc, dict(a=5))
+        impl.delete_many.assert_called_with(dict(a=5))
+        sess.update_partial(TestDoc, dict(a=5), dict(b=6), False)
         impl.update_one.assert_called_with(dict(a=5), dict(b=6), False)
+
+        impl.find.assert_called_with(dict(a=5))
 
         doc = TestDoc({})
         sess.save(doc)
@@ -74,7 +74,7 @@ class TestSession(TestCase):
         sess.insert(doc)
         impl.insert_one.assert_called_with(doc)
         sess.delete(doc)
-        impl.remove.assert_called_with(dict(_id=None))
+        impl.delete_one.assert_called_with(dict(_id=None))
 
         impl.reset_mock()
         doc = self.TestDocNoSchema({'_id':5, 'a':5})

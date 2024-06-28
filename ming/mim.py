@@ -543,22 +543,23 @@ class Collection(collection.Collection):
         return UpdateResult(result, True)
 
     def __remove(self, spec=None, **kwargs):
-        result = dict(n=0)
+        result = dict(
+            acknowledged=True,
+            deleted_count=0,
+        )
         multi = kwargs.get('multi', True)
         if spec is None: spec = {}
         new_data = {}
         for id, doc in self._data.items():
-            if match(spec, doc) and (multi or result['n'] == 0):
-                result['n'] += 1
+            if match(spec, doc) and (multi or result['deleted_count'] == 0):
+                result['deleted_count'] += 1
                 self._deindex(doc)
             else:
                 new_data[id] = doc
         self._data = new_data
+        # TODO: this is needed for backcompat, but can drop 'n' in SF-9544
+        result['n'] = result['deleted_count']
         return result
-
-    def remove(self, spec=None, **kwargs):
-        warnings.warn('remove is now deprecated, please use delete_many or delete_one', DeprecationWarning, stacklevel=2)
-        self.__remove(spec, **kwargs)
 
     def delete_one(self, filter, session=None):
         res = self.__remove(filter, multi=False)
