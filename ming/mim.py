@@ -462,8 +462,11 @@ class Collection(collection.Collection):
                                       sort=sort, upsert=upsert, return_document=return_document,
                                       operation=ModifyOperation.UPDATE, **kwargs)
 
-    def count(self, filter=None, **kwargs):
-        return self.find(filter, **kwargs).count()
+    def estimated_document_count(self, **kwargs):
+        return self.find({}, **kwargs)._count()
+
+    def count_documents(self, filter=None, **kwargs):
+        return self.find(filter, **kwargs)._count()
 
     def __insert(self, doc_or_docs, **kwargs):
         result = []
@@ -689,7 +692,7 @@ class Cursor:
         if isinstance(projection, (tuple, list)):
             projection = {f: 1 for f in projection}
 
-        self._collection = collection
+        self.collection = collection
         self._iterator_gen = _iterator_gen
         self._sort = sort
         self._skip = skip or None    # cope with 0 being passed.
@@ -714,7 +717,7 @@ class Cursor:
 
     def clone(self, **overrides):
         result = Cursor(
-            collection=self._collection,
+            collection=self.collection,
             _iterator_gen=self._iterator_gen,
             sort=self._sort,
             skip=self._skip,
@@ -730,10 +733,9 @@ class Cursor:
             del self.iterator
             self._safe_to_chain = True
 
+    def _count(self):
         """
-        replace uses with collection based checks:
-            ntotal = collection.estimated_document_count()
-            nmatched = collection.count_documents({'price': {'$gte': 10}})
+        An internal method to count the number of documents in the cursor.
         """
         return sum(1 for x in self._iterator_gen())
 
@@ -764,7 +766,7 @@ class Cursor:
 
         # mim doesn't currently do anything with codec_options, so this doesn't do anything currently
         # but leaving it here as a placeholder for the future - otherwise we should delete wrap_as_class()
-        return wrap_as_class(value, self._collection.codec_options.document_class)
+        return wrap_as_class(value, self.collection.codec_options.document_class)
 
     __next__ = next
 
@@ -811,13 +813,13 @@ class Cursor:
         # checks indexes, but doesn't actually use hinting
         if type(index) == list:
             test_idx = [(i, direction) for i, direction in index if i != '$natural']
-            values = [[k for k in i["key"]] for i in self._collection._indexes.values()]
+            values = [[k for k in i["key"]] for i in self.collection._indexes.values()]
             if test_idx and test_idx not in values:
                 raise OperationFailure('database error: bad hint. Valid values: %s' % values)
         elif isinstance(index, str):
-            if index not in self._collection._indexes.keys():
+            if index not in self.collection._indexes.keys():
                 raise OperationFailure('database error: bad hint. Valid values: %s'
-                        % self._collection._indexes.keys())
+                        % self.collection._indexes.keys())
         elif index is None:
             pass
         else:

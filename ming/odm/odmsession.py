@@ -1,4 +1,5 @@
 from collections import defaultdict
+import warnings
 
 from pymongo.collection import ReturnDocument
 from pymongo.database import Database

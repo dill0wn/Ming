@@ -83,12 +83,15 @@ class Session:
         collection = self._impl(cls)
         cursor = collection.find(*args, **kwargs)
 
+        find_spec = kwargs.get('filter', None) or args[0] if args else {}
+
         if not validate:
             return (cls(o, skip_from_bson=True) for o in cursor)
 
         return Cursor(cls, cursor,
                       allow_extra=allow_extra,
-                      strip_extra=strip_extra)
+                      strip_extra=strip_extra,
+                      find_spec=find_spec)
 
     def remove(self, cls, filter={}, *args, **kwargs):
         fix_write_concern(kwargs)
@@ -102,7 +105,7 @@ class Session:
         return self.find(cls, kwargs)
 
     def count(self, cls):
-        return self._impl(cls).count()
+        return self._impl(cls).estimated_document_count()
 
     def ensure_index(self, cls, fields, **kwargs):
         index_fields = fixup_index(fields)

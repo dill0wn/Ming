@@ -104,7 +104,7 @@ class TestSession(TestCase):
         sess.count(self.TestDoc)
         sess.ensure_index(self.TestDoc, 'a')
         impl.find.assert_called_with(dict(a=5))
-        impl.count.assert_called_with()
+        impl.estimated_document_count.assert_called_with()
         impl.ensure_index.assert_called_with([ ('a', pymongo.ASCENDING) ])
         impl.ensure_index.reset_mock()
 

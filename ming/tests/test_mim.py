@@ -27,79 +27,79 @@ class TestDatastore(TestCase):
         self.assertEqual(4, len(f({}).limit(0).all()))
 
     def test_regex(self):
-        f = self.bind.db.rcoll.find
-        assert 4 == f(dict(_id=re.compile(r'r\d+'))).count()
-        assert 2 == f(dict(_id=re.compile(r'r[0-1]'))).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 4 == f(dict(_id=re.compile(r'r\d+')))
+        assert 2 == f(dict(_id=re.compile(r'r[0-1]')))
 
     def test_regex_options(self):
-        f = self.bind.db.rcoll.find
-        assert 2 == f(dict(_id={'$regex': 'r[0-1]', '$options': 'i'})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 2 == f(dict(_id={'$regex': 'r[0-1]', '$options': 'i'}))
 
     def test_eq(self):
-        f = self.bind.db.rcoll.find
-        assert 1 == f(dict(d={'$eq': 0})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 1 == f(dict(d={'$eq': 0}))
 
     def test_ne(self):
-        f = self.bind.db.rcoll.find
-        assert 3 == f(dict(d={'$ne': 0})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 3 == f(dict(d={'$ne': 0}))
 
     def test_gt(self):
-        f = self.bind.db.rcoll.find
-        assert 1 == f(dict(d={'$gt': 2})).count()
-        assert 0 == f(dict(d={'$gt': 3})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 1 == f(dict(d={'$gt': 2}))
+        assert 0 == f(dict(d={'$gt': 3}))
 
     def test_gte(self):
-        f = self.bind.db.rcoll.find
-        assert 2 == f(dict(d={'$gte': 2})).count()
-        assert 1 == f(dict(d={'$gte': 3})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 2 == f(dict(d={'$gte': 2}))
+        assert 1 == f(dict(d={'$gte': 3}))
 
     def test_lt(self):
-        f = self.bind.db.rcoll.find
-        assert 0 == f(dict(d={'$lt': 0})).count()
-        assert 1 == f(dict(d={'$lt': 1})).count()
-        assert 2 == f(dict(d={'$lt': 2})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 0 == f(dict(d={'$lt': 0}))
+        assert 1 == f(dict(d={'$lt': 1}))
+        assert 2 == f(dict(d={'$lt': 2}))
 
     def test_lte(self):
-        f = self.bind.db.rcoll.find
-        assert 1 == f(dict(d={'$lte': 0})).count()
-        assert 2 == f(dict(d={'$lte': 1})).count()
-        assert 3 == f(dict(d={'$lte': 2})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 1 == f(dict(d={'$lte': 0}))
+        assert 2 == f(dict(d={'$lte': 1}))
+        assert 3 == f(dict(d={'$lte': 2}))
 
     def test_range_equal(self):
-        f = self.bind.db.rcoll.find
-        assert 1 == f(dict(d={'$gte': 2, '$lte': 2})).count()
-        assert 2 == f(dict(d={'$gte': 1, '$lte': 2})).count()
-        assert 0 == f(dict(d={'$gte': 4, '$lte': -1})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 1 == f(dict(d={'$gte': 2, '$lte': 2}))
+        assert 2 == f(dict(d={'$gte': 1, '$lte': 2}))
+        assert 0 == f(dict(d={'$gte': 4, '$lte': -1}))
 
     def test_range_inequal(self):
-        f = self.bind.db.rcoll.find
-        assert 0 == f(dict(d={'$gt': 2, '$lt': 2})).count()
-        assert 1 == f(dict(d={'$gt': 2, '$lt': 4})).count()
-        assert 0 == f(dict(d={'$gt': 1, '$lt': 2})).count()
-        assert 1 == f(dict(d={'$gt': 1, '$lt': 3})).count()
-        assert 0 == f(dict(d={'$gt': 4, '$lt': -1})).count()
+        f = self.bind.db.rcoll.count_documents
+        assert 0 == f(dict(d={'$gt': 2, '$lt': 2}))
+        assert 1 == f(dict(d={'$gt': 2, '$lt': 4}))
+        assert 0 == f(dict(d={'$gt': 1, '$lt': 2}))
+        assert 1 == f(dict(d={'$gt': 1, '$lt': 3}))
+        assert 0 == f(dict(d={'$gt': 4, '$lt': -1}))
 
     def test_exists(self):
-        f = self.bind.db.coll.find
-        assert 1 == f(dict(a={'$exists':True})).count()
-        assert 0 == f(dict(a={'$exists':False})).count()
-        assert 0 == f(dict(b={'$exists':True})).count()
-        assert 1 == f(dict(b={'$exists':False})).count()
+        f = self.bind.db.coll.count_documents
+        assert 1 == f(dict(a={'$exists':True}))
+        assert 0 == f(dict(a={'$exists':False}))
+        assert 0 == f(dict(b={'$exists':True}))
+        assert 1 == f(dict(b={'$exists':False}))
 
     def test_all(self):
-        f = self.bind.db.coll.find
-        assert 1 == f(dict(c={'$all':[1,2]})).count()
-        assert 1 == f(dict(c={'$all':[1,2,3]})).count()
-        assert 0 == f(dict(c={'$all':[2,3,4]})).count()
-        assert 1 == f(dict(c={'$all':[]})).count()
+        f = self.bind.db.coll.count_documents
+        assert 1 == f(dict(c={'$all':[1,2]}))
+        assert 1 == f(dict(c={'$all':[1,2,3]}))
+        assert 0 == f(dict(c={'$all':[2,3,4]}))
+        assert 1 == f(dict(c={'$all':[]}))
 
     def test_or(self):
-        f = self.bind.db.coll.find
-        assert 1 == f(dict({'$or': [{'c':{'$all':[1,2,3]}}]})).count()
-        assert 0 == f(dict({'$or': [{'c':{'$all':[4,2,3]}}]})).count()
-        assert 1 == f(dict({'$or': [{'a': 2}, {'c':{'$all':[1,2,3]}}]})).count()
-        self.assertEqual(0, f(dict({'_id': 'bar', '$or': [{'a': 2}, {'c':{'$all':[1,2,3]}}]})).count())
-        self.assertEqual(1, f(dict({'_id': 'foo', '$or': [{'a': 2}, {'c':{'$all':[1,2,3]}}]})).count())
+        f = self.bind.db.coll.count_documents
+        assert 1 == f(dict({'$or': [{'c':{'$all':[1,2,3]}}]}))
+        assert 0 == f(dict({'$or': [{'c':{'$all':[4,2,3]}}]}))
+        assert 1 == f(dict({'$or': [{'a': 2}, {'c':{'$all':[1,2,3]}}]}))
+        self.assertEqual(0, f(dict({'_id': 'bar', '$or': [{'a': 2}, {'c':{'$all':[1,2,3]}}]})))
+        self.assertEqual(1, f(dict({'_id': 'foo', '$or': [{'a': 2}, {'c':{'$all':[1,2,3]}}]})))
 
     def test_find_with_projection_list(self):
         o = self.bind.db.coll.find_one({'a': 2}, projection=['a'])
@@ -187,8 +187,7 @@ class TestDatastore(TestCase):
         coll.create_index([('field', 'text')])
         coll.insert_one({'field': 'text to be searched'})
         coll.insert_one({'field': 'text to be'})
-        assert coll.find({'$text': {'$search': 'searched'}},
-                         {'score': {'$meta': 'textScore'}}).count() == 1
+        assert coll.count_documents({'$text': {'$search': 'searched'}}) == 1
 
 
 class TestDottedOperators(TestCase):
@@ -215,8 +214,8 @@ class TestDottedOperators(TestCase):
         self.assertEqual(obj, { 'b': { 'f': [ { 'g': 11 }, { 'g': 2 } ] }})
 
     def test_find_dotted(self):
-        self.assertEqual(self.coll.find({'b.c': 1}).count(), 1)
-        self.assertEqual(self.coll.find({'b.c': 2}).count(), 0)
+        self.assertEqual(self.coll.count_documents({'b.c': 1}), 1)
+        self.assertEqual(self.coll.count_documents({'b.c': 2}), 0)
         self.assertEqual(0, len(self.coll.find({'x.y.z': 1}).all()))
 
     def test_inc_dotted(self):
@@ -593,11 +592,16 @@ class TestCollection(TestCase):
         self.assertIsInstance(doc.pop("_id"), bson.ObjectId)
         self.assertEqual({'i': 2}, doc)
 
+    def test_find_one_and_delete(self):
+        self.bind.db.col.insert_one({'_id': 1})
+        self.assertEqual({'_id': 1}, self.bind.db.col.find_one_and_delete({'_id': 1}))
+        self.assertEqual(0, self.bind.db.col.estimated_document_count())
+
     def test_find_one_and_delete_returns_projection(self):
         self.bind.db.col.insert_one({'_id': 1, 'i': 1})
         self.assertEqual({'i': 1}, self.bind.db.col.find_one_and_delete({'_id': 1},
                                                                           projection={'_id': False, 'i': True}))
-        self.assertEqual(0, self.bind.db.col.count())
+        self.assertEqual(0, self.bind.db.col.estimated_document_count())
 
     def test_hint_simple(self):
         self.bind.db.coll.ensure_index([('myindex', 1)])
