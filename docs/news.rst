@@ -6,11 +6,22 @@ The latest releases support PyMongo 3.  The older 0.5.x releases support PyMongo
 Pre-Release
 ---------------------
 * Prepare for PyMongo 4.0 support
-* MIM: remove deprecated ``manipulate`` and ``safe`` args from pymongo's ``insert_one`` and ``insert_many`` methods
-* Replace ``insert()`` with ``insert_one()`` and ``insert_many()`` to closer match pymongo4's API
-* Replace ``find_and_modify()`` with ``find_one_and_update()``, ``find_one_and_replace()``, and ``find_one_and_delete()`` to closer match pymongo4's API
-* Remove ``group()`` methods as they are unsupported in pymongo4. Use the aggregation pipeline.
-* Remove ``map_reduce()`` and ``inline_map_reduce()`` methods as they are unsupported in pymongo4. Use the aggregation pipeline.
+* Replace ``find_and_modify()`` session methods with ``find_one_and_update()``, ``find_one_and_replace()``, 
+  and ``find_one_and_delete()`` to closer match pymongo4's API
+* Remove ``group()`` session methods as they are unsupported in pymongo4. Use the aggregation pipeline.
+* Remove ``map_reduce()`` and ``inline_map_reduce()`` session methods as they are unsupported in pymongo4. 
+  Use the aggregation pipeline.
+* MIM: Replace ``mim.Collection.insert()`` with ``insert_one()`` and ``insert_many()`` to match pymongo4
+* MIM: Remove deprecated ``manipulate`` and ``safe`` args from pymongo's ``insert_one`` and ``insert_many`` methods
+* MIM: Replace ``mim.Collection.update()`` with ``update_one()`` and ``update_many()`` to match pymongo4
+* MIM: Replace ``mim.Collection.count()`` and ``mim.Cursor.count()`` with 
+  ``mim.Collection.estimated_document_count()`` and ``mim.Collection.count_documents()`` to match pymongo4
+* MIM: Replace ``mim.Collection.remove()`` with ``mim.Collection.delete_one()`` 
+  and ``mim.Collection.delete_many()`` to match pymongo4
+* MIM: Rename ``collection_names()`` and ``database_names()`` to ``list_collection_names()``
+  and ``list_database_names``
+* MIM: Remove ``mim.Collection.map_reduce()`` and ``mim.Collection.inline_map_reduce()`` to match pymongo4
+* MIM: Replace ``ensure_index()`` with ``create_index()`` to match pymongo4
 
 0.13.0 (Mar 16, 2023)
 ---------------------
