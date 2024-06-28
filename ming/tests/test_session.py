@@ -65,7 +65,7 @@ class TestSession(TestCase):
         impl.find.assert_called_with(dict(a=5))
         impl.remove.assert_called_with(dict(a=5))
         impl.group.assert_called_with('a')
-        impl.update.assert_called_with(dict(a=5), dict(b=6), False)
+        impl.update_one.assert_called_with(dict(a=5), dict(b=6), False)
 
         doc = TestDoc({})
         sess.save(doc)
@@ -83,16 +83,19 @@ class TestSession(TestCase):
         impl.save.assert_called_with(dict(_id=5, a=5))
         doc = self.TestDocNoSchema({'_id':5, 'a':5, 'b': 6})
         sess.save(doc, 'a')
-        impl.update.assert_called_with(dict(_id=5), {'$set':dict(a=5)})
+        impl.update_one.assert_called_with(dict(_id=5), {'$set':dict(a=5)})
+        impl.reset_mock()
         doc = self.TestDocNoSchema({'_id':5, 'a':5})
         impl.insert_one.return_value = bson.ObjectId()
         sess.insert(doc)
         impl.insert_one.assert_called_with(dict(_id=5, a=5))
         doc = self.TestDocNoSchema({'_id':5, 'a':5})
         sess.upsert(doc, ['a'])
-        impl.update.assert_called_with(dict(a=5), dict(_id=5, a=5), upsert=True)
+        impl.update_one.assert_called_with(dict(a=5), {'$set': dict(_id=5, a=5)}, upsert=True)
+        impl.reset_mock()
         sess.upsert(doc, '_id')
-        impl.update.assert_called_with(dict(_id=5), dict(_id=5, a=5), upsert=True)
+        impl.update_one.assert_called_with(dict(_id=5), {'$set': dict(_id=5, a=5)}, upsert=True)
+        impl.reset_mock()
 
         sess.find_by(self.TestDoc, a=5)
         sess.count(self.TestDoc)
@@ -124,11 +127,11 @@ class TestSession(TestCase):
 
         doc = self.TestDocNoSchema(dict(_id=1, a=5))
         sess.increase_field(doc, a=60)
-        impl.update.assert_called_with(dict(_id=1, a={'$lt': 60}),
-                                       {'$set': dict(a=60)})
+        impl.update_one.assert_called_with(dict(_id=1, a={'$lt': 60}),
+                                           {'$set': dict(a=60)})
         sess.increase_field(doc, b=60)
-        impl.update.assert_called_with(dict(_id=1, b={'$lt': 60}),
-                                       {'$set': dict(b=60)})
+        impl.update_one.assert_called_with(dict(_id=1, b={'$lt': 60}),
+                                           {'$set': dict(b=60)})
         self.assertRaises(ValueError, sess.increase_field, doc, b=None)
 
         sess.index_information(self.TestDoc)

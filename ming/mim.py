@@ -162,7 +162,7 @@ class Database(database.Database):
                     coll.insert(before)
                 else:
                     raise OperationFailure('No matching object found')
-            coll.update(command['query'], command['update'])
+            coll.update_many(command['query'], command['update'])
             if command.get('new', False) or upsert:
                 return dict(value=coll.find_one(dict(_id=before['_id'])))
             return dict(value=before)
@@ -504,7 +504,8 @@ class Collection(collection.Collection):
             self._index(doc)
             result['n'] += 1
             result['nModified'] += 1
-            if not multi: break
+            if not multi:
+                break
         if result['n']:
             result['updatedExisting'] = True
             return result
@@ -522,10 +523,6 @@ class Collection(collection.Collection):
             return result
         else:
             return result
-
-    def update(self, spec, updates, upsert=False, multi=False):
-        warnings.warn('update is now deprecated, please use update_many or update_one', DeprecationWarning, stacklevel=2)
-        return self.__update(spec, updates, upsert, multi)
 
     def update_many(self, filter, update, upsert=False):
         result = self.__update(filter, update, upsert, multi=True)

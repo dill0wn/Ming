@@ -128,7 +128,10 @@ class Session:
         return self._impl(cls).distinct(*args, **kwargs)
 
     def update_partial(self, cls, spec, fields, upsert=False, **kw):
-        return self._impl(cls).update(spec, fields, upsert, **kw)
+        multi = kw.pop('multi', False)
+        if multi is True:
+            return self._impl(cls).update_many(spec, fields, upsert, **kw)
+        return self._impl(cls).update_one(spec, fields, upsert, **kw)
 
     def find_and_modify(self, cls, query=None, sort=None, new=False, **kw):
         # FIXME: remove
@@ -158,7 +161,7 @@ class Session:
         data = self._prep_save(doc, kwargs.pop('validate', True))
         if args:
             values = {arg: data[arg] for arg in args}
-            result = self._impl(doc).update(
+            result = self._impl(doc).update_one(
                 dict(_id=doc._id), {'$set': values}, **fix_write_concern(kwargs))
         else:
             result = self._impl(doc).save(data, **fix_write_concern(kwargs))
@@ -179,8 +182,8 @@ class Session:
         self._prep_save(doc, kwargs.pop('validate', True))
         if type(spec_fields) != list:
             spec_fields = [spec_fields]
-        return self._impl(doc).update({k:doc[k] for k in spec_fields},
-                               doc,
+        return self._impl(doc).update_one({k:doc[k] for k in spec_fields},
+                               {'$set': doc},
                                upsert=True)
 
     @annotate_doc_failure
@@ -205,7 +208,7 @@ class Session:
         for k,v in fields_values.items():
             self._set(doc, k.split('.'), v)
         impl = self._impl(doc)
-        return impl.update({'_id':doc._id}, {'$set':fields_values})
+        return impl.update_one({'_id':doc._id}, {'$set':fields_values})
 
     @annotate_doc_failure
     def increase_field(self, doc, **kwargs):
@@ -220,11 +223,11 @@ class Session:
             raise ValueError(f"{key}={value}")
 
         if key not in doc:
-            self._impl(doc).update(
+            self._impl(doc).update_one(
                 {'_id': doc._id, key: None},
                 {'$set': {key: value}}
             )
-        self._impl(doc).update(
+        self._impl(doc).update_one(
             {'_id': doc._id, key: {'$lt': value}},
             # failed attempt at doing it all in one operation
             #{'$where': "this._id == '%s' && (!(%s in this) || this.%s < '%s')"
