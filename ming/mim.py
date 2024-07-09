@@ -31,7 +31,7 @@ from bson.raw_bson import RawBSONDocument
 from pymongo import database, collection, ASCENDING, MongoClient, UpdateOne
 from pymongo.cursor import Cursor as PymongoCursor
 from pymongo.errors import InvalidOperation, OperationFailure, DuplicateKeyError
-from pymongo.results import DeleteResult, UpdateResult, InsertManyResult, InsertOneResult
+from pymongo.results import DeleteResult, UpdateResult, InsertManyResult, InsertOneResult, BulkWriteResult
 
 log = logging.getLogger(__name__)
 
@@ -407,7 +407,7 @@ class Collection(collection.Collection):
             upserted = True
             if upsert:
                 result = self.__update(query, update, upsert=True)
-                query = {'_id': result['upsert_id']}
+                query = {'_id': result.upserted_id}
             else:
                 return None
 
@@ -468,7 +468,7 @@ class Collection(collection.Collection):
     def count_documents(self, filter=None, **kwargs):
         return self.find(filter, **kwargs)._count()
 
-    def __insert(self, doc_or_docs, **kwargs):
+    def __insert(self, doc_or_docs, **kwargs) -> InsertOneResult | InsertManyResult:
         result = []
         if not isinstance(doc_or_docs, list):
             doc_or_docs = [ doc_or_docs ]
@@ -484,44 +484,41 @@ class Collection(collection.Collection):
                 continue
             self._index(doc)
             self._data[_id] = bcopy(doc)
-        return result
+        if len(result) > 1:
+            return InsertManyResult(result, True)
+        else:
+            return InsertOneResult(result, True)
 
-    def insert_one(self, document, session=None):
-        result = self.__insert(document)
-        if result:
-            result = result[0]
-        return InsertOneResult(result or None, True)
+    def insert_one(self, document, session=None) -> InsertOneResult:
+        return self.__insert(document)
 
-    def insert_many(self, documents, ordered=True, session=None):
-        result = self.__insert(documents)
-        return InsertManyResult(result, True)
+    def insert_many(self, documents, ordered=True, session=None) -> InsertManyResult:
+        return self.__insert(documents)
 
     def replace_one(self, filter, replacement, upsert=False):
         return self.__update(filter, replacement, upsert)
 
-    def __update(self, spec, updates, upsert=False, multi=False):
+    def __update(self, spec, updates, upsert=False, multi=False) -> UpdateResult:
         bson_safe(spec)
         bson_safe(updates)
 
         # https://pymongo.readthedocs.io/en/stable/api/pymongo/results.html#pymongo.results.UpdateResult
-        result = dict(
-            acknowleged=True,
-            matched_count=0,
-            modified_count=0,
-            raw_result=None,
-            upsert_id=None,
+        # TODO: SF-9544 - likely needs update in pymongo4
+        raw_result = dict(
+            n=0,
+            nModified=0,
+            upserted=None,
         )
         for doc, mspec in self._find(spec):
             self._deindex(doc)
             mspec.update(updates)
             self._index(doc)
-            result['matched_count'] += 1
-            result['modified_count'] += 1
+            raw_result['n'] += 1
+            raw_result['nModified'] += 1
             if not multi:
                 break
-        if result['matched_count']:
-            result['acknowleged'] = True
-            return result
+        if raw_result['n']:
+            return UpdateResult(raw_result, True)
         if upsert:
             doc = dict(spec)
             MatchDoc(doc).update(updates, upserted=upsert)
@@ -532,45 +529,39 @@ class Collection(collection.Collection):
                 raise DuplicateKeyError('duplicate ID on upsert')
             self._index(doc)
             self._data[_id] = bcopy(doc)
-            result['upsert_id'] = _id
-            return result
+            raw_result['upserted'] = _id
+            return UpdateResult(raw_result, True)
         else:
-            return result
+            return UpdateResult(raw_result, True)
 
     def update_many(self, filter, update, upsert=False):
-        result = self.__update(filter, update, upsert, multi=True)
-        return UpdateResult(result, True)
+        return self.__update(filter, update, upsert, multi=True)
 
     def update_one(self, filter, update, upsert=False):
-        result = self.__update(filter, update, upsert, multi=False)
-        return UpdateResult(result, True)
+        return self.__update(filter, update, upsert, multi=False)
 
     def __remove(self, spec=None, **kwargs):
+        # TODO: SF-9544 - likely needs update in pymongo4
         result = dict(
-            acknowledged=True,
-            deleted_count=0,
+            n=0,
         )
         multi = kwargs.get('multi', True)
         if spec is None: spec = {}
         new_data = {}
         for id, doc in self._data.items():
-            if match(spec, doc) and (multi or result['deleted_count'] == 0):
-                result['deleted_count'] += 1
+            if match(spec, doc) and (multi or result['n'] == 0):
+                result['n'] += 1
                 self._deindex(doc)
             else:
                 new_data[id] = doc
         self._data = new_data
-        # TODO: this is needed for backcompat, but can drop 'n' in SF-9544
-        result['n'] = result['deleted_count']
-        return result
+        return DeleteResult(result, True)
 
     def delete_one(self, filter, session=None):
-        res = self.__remove(filter, multi=False)
-        return DeleteResult(res, True)
+        return self.__remove(filter, multi=False)
 
     def delete_many(self, filter, session=None):
-        res = self.__remove(filter, multi=True)
-        return DeleteResult(res, True)
+        return self.__remove(filter, multi=True)
 
     def list_indexes(self, session=None):
         return Cursor(self, lambda: self._indexes.values())
@@ -652,10 +643,10 @@ class Collection(collection.Collection):
                                       'filter': filter})
 
     def bulk_write(self, requests, ordered=True,
-                   bypass_document_validation=False):
+                   bypass_document_validation=False) -> BulkWriteResult:
         for step in requests:
             if isinstance(step, UpdateOne):
-                self.update_one(step._filter, step._doc, upsert=step._upsert)
+                return self.update_one(step._filter, step._doc, upsert=step._upsert)
             else:
                 raise NotImplementedError(
                     "MIM currently doesn't support %s operations" % type(step)
