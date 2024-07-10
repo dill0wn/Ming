@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 '''mim.py - Mongo In Memory - stripped-down version of mongo that is
 non-persistent and hopefully much, much faster
 '''
