@@ -90,6 +90,11 @@ class Cursor:
     __next__ = next
 
     def count(self):
+        """
+        This method, although deprecated by pymongo, is kept for backcompat with existing code.
+        It is inaccurate when used with a cursor that has been limited or skipped. However,
+        this behavior is consistent with previous pymongo (3.X) and mongo shell (4.X) behavior.
+        """
         return self.cursor.collection.count_documents(self.find_spec)
 
     def distinct(self, *args, **kwargs):
