@@ -154,21 +154,44 @@ class Session:
 
     @annotate_doc_failure
     def save(self, doc, *args, **kwargs) -> bson.ObjectId:
-        data = self._prep_save(doc, kwargs.pop('validate', True))
-        if args:
-            data = {arg: data[arg] for arg in args}
-            result = self._impl(doc).update_one(
-                dict(_id=doc._id), {'$set': data},
-                **fix_write_concern(kwargs)
-            )
-        else:
-            result = self._impl(doc).replace_one(
-                dict(_id=doc._id), data,
-                upsert=True, **fix_write_concern(kwargs)
-            )
+        """
+        Can either
 
-        if result and '_id' not in doc and result.upserted_id:
-            doc._id = result.upserted_id
+            args
+                   N            Y   
+           |---------------------------|
+   _id  N  |   insert     |   raise    |
+           |---------------------------|
+        Y  |   replace    |   update   |
+           |---------------------------|
+        """
+        data = self._prep_save(doc, kwargs.pop('validate', True))
+        _id = getattr(doc, '_id', None) or None
+
+        new_id = None
+        if args:
+            if not _id:
+                raise ValueError('Cannot save a subset without an _id')
+            else:
+                arg_data = {arg: data[arg] for arg in args}
+                result = self._impl(doc).update_one(
+                    dict(_id=_id), {'$set': arg_data},
+                    **fix_write_concern(kwargs)
+                )
+        else:
+            if not _id:
+                result = self._impl(doc).insert_one(
+                    data, **fix_write_concern(kwargs)
+                )
+                new_id = result.inserted_id
+            else:
+                result = self._impl(doc).replace_one(
+                    dict(_id=_id), data,
+                    upsert=True, **fix_write_concern(kwargs)
+                )
+                new_id = result.upserted_id
+            if result and '_id' not in doc and new_id:
+                doc._id = new_id
 
         return result
 
