@@ -67,7 +67,7 @@ class TestSession(TestCase):
 
         doc = TestDoc({})
         sess.save(doc)
-        impl.replace_one.assert_called_with(dict(_id=None), doc, upsert=True)
+        impl.replace_one.assert_called_with(dict(_id=doc._id), doc, upsert=True)
         self.assertEqual(doc.a, None)
         self.assertEqual(doc.b, dict(a=None))
         del doc._id
