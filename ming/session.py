@@ -166,11 +166,11 @@ class Session:
            |---------------------------|
         """
         data = self._prep_save(doc, kwargs.pop('validate', True))
-        _id = getattr(doc, '_id', None) or None
+        _id = getattr(doc, '_id', None)
 
         new_id = None
         if args:
-            if not _id:
+            if _id is None:
                 raise ValueError('Cannot save a subset without an _id')
             else:
                 arg_data = {arg: data[arg] for arg in args}
@@ -179,7 +179,7 @@ class Session:
                     **fix_write_concern(kwargs)
                 )
         else:
-            if not _id:
+            if _id is None:
                 result = self._impl(doc).insert_one(
                     data, **fix_write_concern(kwargs)
                 )
@@ -190,7 +190,7 @@ class Session:
                     upsert=True, **fix_write_concern(kwargs)
                 )
                 new_id = result.upserted_id
-            if result and '_id' not in doc and new_id:
+            if result and ('_id' not in doc) and (new_id is not None):
                 doc._id = new_id
 
         return result
