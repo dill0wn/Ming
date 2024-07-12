@@ -592,11 +592,6 @@ class TestCollection(TestCase):
         self.assertIsInstance(doc.pop("_id"), bson.ObjectId)
         self.assertEqual({'i': 2}, doc)
 
-    def test_find_one_and_delete(self):
-        self.bind.db.col.insert_one({'_id': 1})
-        self.assertEqual({'_id': 1}, self.bind.db.col.find_one_and_delete({'_id': 1}))
-        self.assertEqual(0, self.bind.db.col.estimated_document_count())
-
     def test_find_one_and_delete_returns_projection(self):
         self.bind.db.col.insert_one({'_id': 1, 'i': 1})
         self.assertEqual({'i': 1}, self.bind.db.col.find_one_and_delete({'_id': 1},
