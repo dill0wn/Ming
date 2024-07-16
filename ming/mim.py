@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import bson.codec_options
+
 '''mim.py - Mongo In Memory - stripped-down version of mongo that is
 non-persistent and hopefully much, much faster
 '''
@@ -29,6 +31,8 @@ from ming import compat
 from ming.utils import LazyProperty
 
 import bson
+from bson.binary import UuidRepresentation, Binary
+from bson.codec_options import CodecOptions
 from bson.raw_bson import RawBSONDocument
 from pymongo import database, collection, ASCENDING, MongoClient, UpdateOne
 from pymongo.cursor import Cursor as PymongoCursor
@@ -36,6 +40,9 @@ from pymongo.errors import InvalidOperation, OperationFailure, DuplicateKeyError
 from pymongo.results import DeleteResult, UpdateResult, InsertManyResult, InsertOneResult, BulkWriteResult
 
 log = logging.getLogger(__name__)
+
+UUID_REPRESENTATION = UuidRepresentation.PYTHON_LEGACY
+UUID_REPRESENTATION_STR = 'pythonLegacy'
 
 
 class PymongoCursorNoCleanup(PymongoCursor):
@@ -56,7 +63,7 @@ class Connection:
         self._databases = {}
 
         # Clone defaults from a MongoClient instance.
-        mongoclient = MongoClient()
+        mongoclient = MongoClient(uuidRepresentation=UUID_REPRESENTATION_STR)
         self.options = mongoclient.options
         self.read_preference = mongoclient.read_preference
         self.write_concern = mongoclient.write_concern
@@ -887,6 +894,13 @@ class BsonArith:
     def _build_types(cls):
         # this is a list of conversion functions, and the types they apply to
         # see also bson._ENCODERS for what pymongo itself handles
+
+        def handle_binary(val):
+            """Treat UUIDs as binary."""
+            if isinstance(val, uuid.UUID):
+                val = Binary.from_uuid(val, uuid_representation=UUID_REPRESENTATION)
+            return val
+        
         cls._types = [
             (lambda x:x, [type(None)]),
             (lambda x:x, [int]),
@@ -894,14 +908,13 @@ class BsonArith:
             (lambda x: {k: cls.to_bson(v) for k, v in x.items()}, [dict, MatchDoc]),
             (lambda x:list(cls.to_bson(i) for i in x), [list, MatchList]),
             (lambda x:x, [tuple]),
-            (lambda x:x, [bson.Binary]),
+            (lambda x:handle_binary(x), [bson.Binary, uuid.UUID]),
             (lambda x:x, [bytes]),
             (lambda x:x, [bson.ObjectId]),
             (lambda x:x, [bool]),
             (lambda x:x, [datetime]),
             (lambda x:x, [bson.Regex]),
             (lambda x:x, [float]),
-            (lambda x:x, [uuid.UUID]),
         ]
 
 
@@ -1379,11 +1392,12 @@ def validate(doc):
             validate(v)
 
 def bson_safe(obj):
-    bson.BSON.encode(obj)
+    codec_options = CodecOptions(uuid_representation=UUID_REPRESENTATION)
+    return bson.BSON.encode(obj, codec_options=codec_options)
 
 def bcopy(obj):
     if isinstance(obj, dict):
-        return bson.BSON.encode(obj).decode()
+        return bson_safe(obj).decode()
     elif isinstance(obj, list):
         return list(map(bcopy, obj))
     else:

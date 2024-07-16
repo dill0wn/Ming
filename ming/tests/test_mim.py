@@ -729,6 +729,14 @@ class TestCollection(TestCase):
         })))
         self.assertIsNotNone(result)
 
+    def test_find_UUID(self):
+        coll = self.bind.db.coll
+        uu = uuid.UUID('{12345678-1234-5678-1234-567812345678}')
+        coll.insert_one({'x': uu})
+        # real simple filter
+        result = coll.find_one({'x': uu})
+        self.assertIsNotNone(result)
+
 
 class TestBsonCompare(TestCase):
 
