@@ -12,6 +12,7 @@ import itertools
 import uuid
 from itertools import chain
 import collections
+import collections.abc
 import logging
 import warnings
 from datetime import datetime
@@ -578,7 +579,7 @@ class Collection(collection.Collection):
 
     def create_index(self, key_or_list, unique=False, cache_for=300,
                      name=None, **kwargs):
-        if isinstance(key_or_list, list):
+        if isinstance(key_or_list, (list, collections.abc.ItemsView)):
             keys = tuple(tuple(k) for k in key_or_list)
         else:
             keys = ([key_or_list, ASCENDING],)
