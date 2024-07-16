@@ -57,6 +57,7 @@ class Connection:
 
         # Clone defaults from a MongoClient instance.
         mongoclient = MongoClient()
+        self.options = mongoclient.options
         self.read_preference = mongoclient.read_preference
         self.write_concern = mongoclient.write_concern
         self.codec_options = mongoclient.codec_options
