@@ -2,7 +2,7 @@ import types
 import logging
 
 from copy import deepcopy
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from decimal import Decimal, ROUND_HALF_DOWN, Context
 
 import bson
@@ -653,7 +653,9 @@ class DateTime(DateTimeTZ):
         value = value.replace(microsecond=(value.microsecond // 1000) * 1000)
         # Convert a local timestamp to UTC
         if value.tzinfo:
-            value = value.astimezone(pytz.utc).replace(tzinfo=None)
+            value = value.astimezone(pytz.utc)
+        else:
+            value = value.replace(tzinfo=pytz.utc)
         return value
 
 

@@ -82,7 +82,7 @@ class TestSchemaItem(TestCase):
     def test_timezone_conversion(self):
         si = S.SchemaItem.make(datetime)
         self.assertEqual(
-            datetime(2012,2,8,20,42,14,123000),
+            datetime(2012,2,8,20,42,14,123000,pytz.timezone('US/Pacific')),
             si.validate(pytz.timezone('US/Pacific').localize(datetime(2012,2,8,12,42,14,123456))))
 
     def test_date_to_datetime(self):

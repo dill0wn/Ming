@@ -15,7 +15,7 @@ import collections
 import collections.abc
 import logging
 import warnings
-from datetime import datetime
+from datetime import datetime, timezone
 from hashlib import md5
 from functools import cmp_to_key
 from enum import Enum
@@ -238,8 +238,9 @@ class Database(database.Database):
                 tmp_j.add_global('x', obj)
                 js_source = tmp_j.execute('x.toSource()')
                 if js_source.startswith('(new Date'):
-                    # Date object by itself
-                    obj = datetime.fromtimestamp(tmp_j.execute('x.valueOf()')/1000.)
+                    # Date object by itself. JS Dates are in local timezone.
+                    #   `datetime.astimezone()` uses local tz if none provided.
+                    obj = datetime.fromtimestamp(tmp_j.execute('x.valueOf()')/1000.).astimezone()
                 elif js_source.startswith('({'):
                     # Handle recursive conversion in case we got back a
                     # mapping with multiple values.
@@ -901,6 +902,13 @@ class BsonArith:
             if isinstance(val, uuid.UUID):
                 val = Binary.from_uuid(val, uuid_representation=UUID_REPRESENTATION)
             return val
+
+        def handle_datetime(val):
+            # MongoDB does not suport timezone-aware datetimes. At all.
+            # Pymongo's documentation suggests always working with UTC dates when reading and writing to mongo
+            # Pymongo helps by auto-handling the conversion to UTC if the datetime is timezone-aware.
+            # It would be incredibly helpful if mim helped mimic this behavior by... dropping timezone info
+            return val.astimezone(timezone.utc).replace(tzinfo=None)
         
         cls._types = [
             (lambda x:x, [type(None)]),
@@ -913,7 +921,7 @@ class BsonArith:
             (lambda x:x, [bytes]),
             (lambda x:x, [bson.ObjectId]),
             (lambda x:x, [bool]),
-            (lambda x:x, [datetime]),
+            (lambda x:handle_datetime(x), [datetime]),
             (lambda x:x, [bson.Regex]),
             (lambda x:x, [float]),
         ]
